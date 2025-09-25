@@ -1,0 +1,33 @@
+name: $(Build.DefinitionName)_$(date:yyyy).$(date:MM).$(date:dd).$(BuildID)
+
+resources:
+ repositories:
+   - repository: Templates
+     type: git
+     name: Plantilla.Transversal.Pipeline
+     ref: 'refs/heads/main'
+
+trigger:
+ - develop
+
+# variables:
+#   buildConfiguration: 'Release'
+  
+jobs:
+  - template: Templates/Build/Net-template.yml@Templates
+    parameters:
+      JobName: 'Agente'
+      vmImage: 'Windows-latest'
+      buildConfiguration: 'Release'
+      ArtifactName: 'API'
+      Pathcsproject: '**.sln'
+      PathTestproject: '**/*[Tt]est/*.csproj'
+      ProductName: 'API'
+      ApplyTest: false
+      IsWebProject: true
+      ApplySonar: false
+      ProjectKeySonar: 'NO.APLICA'
+      projectNameSonar: 'NO.APLICA'
+      SonarExclusions: '**/**Templates/**'
+      vstsFeed: 'TeamIQ'
+      NetVersion: 8.0.x

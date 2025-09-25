@@ -1,0 +1,34 @@
+﻿using NRules.Fluent.Dsl;
+using RulesEngine.Domain.Common;
+using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
+
+namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.CompletenessRules
+{
+    public class ValidateEmptyDataModelRule42 : Rule
+    {
+        public override void Define()
+        {
+            InvoiceToCheckSolidaria? invoiceToCheck = default;
+
+            When()
+                .Match(() => invoiceToCheck!, x => x.TypeErrorsInModel != null && x.TypeErrorsInModel.Count() > 0);
+
+            Then()
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+        }
+
+        private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        {
+            Alert alert = new Alert
+            {
+                AlertAction = "Alert",
+                AlertNameAction = "Alerta",
+                AlertType = "Regla de completitud",
+                AlertDescription = "valida existencia de  de campos vacios para FURIPS 1",
+                AlertMessage = invoiceToCheck.TypeErrorsInModel!.Count > 1 ? $" Los campos {string.Join(", ", invoiceToCheck.TypeErrorsInModel!)} no se encuentra dentro de los valores permitidos en el anexo tenico FURIPS1"
+                : $"El campo {invoiceToCheck.TypeErrorsInModel[0]} no se encuentra dentro de los valores permitidos en el anexo tenico FURIPS1"
+            };
+            return alert;
+        }
+    }
+}

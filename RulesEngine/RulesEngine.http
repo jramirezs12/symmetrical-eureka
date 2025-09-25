@@ -1,0 +1,42 @@
+@RulesEngine_HostAddress = http://localhost:5255
+
+GET {{RulesEngine_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+POST {{RulesEngine_HostAddress}}/api/ProcessRule
+Content-Type: application/json
+tenant: Mundial
+
+{
+    "RadNumber": "CMVIQ034000000002034",
+    "IpsNit": "890901826",
+    "ModuleName": "Prestadores",
+    "SoatNumber": "32453246",
+    "LicensePlate": "ANA324",
+    "VictimId": "1097346094",
+    "DocumentType": "2",
+    "EventDate": "10/04/2024 00:47:56.863",
+    "DeathDate": "",
+    "ClaimDate": "10/04/2024 00:47:56.863",
+    "InvoiceDate": "01/04/2024 11:47:56.345",
+    "IncomeDate": "01/04/2024 00:47:56.863",
+    "EgressDate": "01/04/2024 12:47:56.863",
+    "InvoiceNumberF1": "3456345",
+    "InvoiceNumberF2": "4567567",
+    "PrimaryTransportationDate": "10/04/2024 12:47:56.863",
+    "InvoiceMAOSDate": "10/04/2024 12:47:56.863",
+    "InvestigationResponseDate": "10/04/2024 12:47:56.863",
+    "IpsNitF2": "34564356",
+    "InvoiceValue": "200000",
+    "BilledMedicalExpenses": "10000",
+    "BilledTransportation": "1000",
+    "IpsNitRips": "34564356",
+    "InvoiceNumberRips": "56785678",
+    "IpsNitFurips": "34564356",
+    "InvoiceNumberFurips": "56785678",
+    "SamePlateDifferentEventNumber": "4",
+    "SamePlateForMotorcycleDifferentEventNumber": "6",
+    "SameVictimIdDifferentEventNumber": "7"
+}

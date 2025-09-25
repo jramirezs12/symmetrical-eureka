@@ -1,0 +1,35 @@
+﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
+using RulesEngine.Domain.Common;
+using RulesEngine.Domain.RulesEntities.Mundial.Entities;
+
+namespace RulesEngine.Application.Clients.Mundial.Rules.RulesRepository.Fase_02.InvestigationRules
+{
+    public class SameNumberAccidentDifferentClaimsStageIIRule13 : Rule, ITrackableRule
+    {
+        public Action OnMatch { get; set; } = () => { };
+        public override void Define()
+        {
+            InvoiceToCheck? invoiceToCheck = default;
+
+            When()
+                .Match(() => invoiceToCheck, x => x.Research != null && x.Research.Length > 0 && x.Research.Any(x => x.ResponseDate == null && string.IsNullOrEmpty(x.UserResponse)));
+            Then()
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
+        }
+        private static Alert CreateAlert()
+        {
+            var alert = new Alert
+            {
+                AlertAction = "SendToQuality",
+                AlertNameAction = "Enviar a Calidad",
+                AlertType = "Regla por solicitud de investigación en curso",
+                AlertDescription = "Valida si el número de siniestro tiene otra reclamación en proceso de investigación",
+                AlertMessage = "La reclamación tiene una solicitud de investigación en curso"
+            };
+
+            return alert;
+        }
+    }
+}

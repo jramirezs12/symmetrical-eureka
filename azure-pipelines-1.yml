@@ -1,0 +1,83 @@
+
+
+trigger:
+- release
+- main
+- develop
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  serviceConnectionRegistry : 'hiandgo_azure_registry_connection_uat'
+  imageRepository: 'hiandgo-rule-engine-api'
+  dockerfilePath: '**/*RulesEngine/Dockerfile'
+  tag: '$(Build.BuildId)'
+  
+
+stages:
+
+    
+- stage: BuildImage
+  displayName: Build and push Image
+  jobs:
+  - job: Build 
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - task: Docker@2
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+      displayName: Build and push an image to container registry
+      inputs:
+        containerRegistry: gipro-dev-registry-connection
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath)'
+        buildContext: '$(Build.Repository.LocalPath)'
+        tags: '$(tag)latest'
+
+    - task: Docker@2
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/release'))
+      displayName: Build and push an image to container registry
+      inputs:
+        containerRegistry: $(serviceConnectionRegistry)
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath)'
+        buildContext: '$(Build.Repository.LocalPath)'
+        tags: '$(tag)latest'
+
+    - task: Docker@2
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      displayName: Build and push an image to container registry
+      inputs:
+        containerRegistry: 'hiandgo-registry-connections-prod'
+        repository: 'hiandgo-rule-engine-repository'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath)'
+        buildContext: '$(Build.Repository.LocalPath)'
+        tags: '$(tag)latest'
+    
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.SourcesDirectory)/Terraform'
+        includeRootFolder: true
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        replaceExistingArchive: true
+    
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+        
+
+
+
+    
+    
+  
+

@@ -1,0 +1,40 @@
+﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
+using RulesEngine.Domain.Common;
+using RulesEngine.Domain.RulesEntities.Mundial.Entities;
+using RulesEngine.Domain.ValueObjects;
+
+namespace RulesEngine.Application.Clients.Mundial.Rules.RulesRepository.Fase_01.DateRules
+{
+    public class EgressDateGreaterInvoiceDate_6 : Rule, ITrackableRule
+    {
+
+        public Action OnMatch { get; set; } = () => { };
+        public override void Define()
+        {
+            InvoiceToCheck? invoiceToCheck = default;
+
+            When()
+                .Match(() => invoiceToCheck!, x => Date.IsNotNullable(x.EgressDate, x.InvoiceDate) && 
+                                                   Date.GreaterThan(x.EgressDate, x.InvoiceDate));
+
+            Then()
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
+        }
+
+        private static Alert CreateAlert()
+        {
+            var alert = new Alert
+            {
+                AlertAction = "DenyClaim",
+                AlertNameAction = "Devolver Reclamación",
+                AlertType = "Regla lógica de fechas",
+                AlertDescription = "Permite validar si la fecha de egreso es posterior a la fecha de factura, lo que conlleva la devolución de la reclamación.",
+                AlertMessage = "Se debe aplicar devolución, teniendo en cuenta que la fecha de egreso no puede ser posterior a la fecha de facturación de la atención."
+            };
+
+            return alert;
+        }
+    }
+}
