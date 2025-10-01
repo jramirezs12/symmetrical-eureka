@@ -16,7 +16,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
     {
         public override void Define()
         {
-            InvoiceToCheck? invoiceToCheck = default;
+            InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
                 .Match(() => invoiceToCheck!, x => x.AtypicalEvent != null && x.AtypicalEvent.Any(y => y.LicensePlate == x.LicensePlate));
@@ -25,7 +25,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                 .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
         }
 
-        private static Alert CreateAlert(InvoiceToCheck invoiceToCheck)
+        private static Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
             var alert = new Alert
             {

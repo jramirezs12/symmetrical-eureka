@@ -48,9 +48,9 @@ namespace RulesEngine.Infrastructure.DataSources
         }
         public async Task<Parameter> GetInvoiceAgregationParameterAsync(string tenant)
         {
-            var paramKey = $"param_MUND-001_{tenant}";
+            var paramKey = $"param_SOL-001_{tenant}";
             return await _utilityService.GetOrSetDataCache(paramKey, () =>
-                _parameterRepository.FindOneAsync(x => x.Tenant == tenant && x.BusinessCode == "MUND-001"), 2);
+                _parameterRepository.FindOneAsync(x => x.Tenant == tenant && x.BusinessCode == "SOL-001"), 2);
         }
 
         public async Task<BsonDocument?> GetInvoiceDataAsync(string query)

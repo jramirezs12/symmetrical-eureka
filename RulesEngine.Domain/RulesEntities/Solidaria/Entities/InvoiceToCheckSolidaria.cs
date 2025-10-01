@@ -7,9 +7,31 @@ using RulesEngine.Domain.Primitives;
 using RulesEngine.Domain.Provider.Entities;
 using RulesEngine.Domain.Research.Entities;
 using RulesEngine.Domain.ValueObjects;
+using System.Collections.Generic;
 
 namespace RulesEngine.Domain.RulesEntities.Solidaria.Entities
 {
+    /// <summary>
+    /// Contexto unificado de datos que serán evaluados por las reglas para el tenant Solidaria.
+    /// Esta clase es un “snapshot” enriquecido: mezcla datos primarios de la factura (SolidariaInvoiceData)
+    /// con datos externos (agregaciones, catálogos, blobs, cálculos) para no acoplar las reglas
+    /// directamente al modelo de persistencia.
+    ///
+    /// NOTA SOBRE DIFERENCIAS VS FURIPS (Mundial):
+    /// - Ya no existe Sections.*; ahora los datos se obtienen de:
+    ///     * Claim (equivale a claimData / víctima / evento / vehículo)
+    ///     * Claim.Victims[0] (víctima principal)
+    ///     * Claim.Vehicle (vehículo involucrado / placa / soat)
+    ///     * Claim.Event (evento / fecha / dirección / etc.)
+    ///     * Claim.TotalGlossValues (totales de glosas)
+    ///     * Claim.Victims[].Services[].Glosses (detalle de glosas)
+    /// - Campos históricos como InvoiceNumberF1 / F2, IpsNitF2 se mapean al único
+    ///   número de factura principal o se mantienen por compatibilidad (para no
+    ///   romper reglas existentes que esperan esas propiedades).
+    /// - InvoiceInformation (detalle de glosas FURIPS) no existe en Solidaria;
+    ///   se deja nullable para compatibilidad si alguna regla la consulta,
+    ///   pero se prefiere migrar a usar Claim.Victims[].Services[].Glosses.
+    /// </summary>
     public partial class InvoiceToCheckSolidaria : InputSourcesEntitty, IInvoiceToCheckContext, IRuleMetadataAware
     {
         public string RadNumber { get; private set; }
@@ -17,249 +39,172 @@ namespace RulesEngine.Domain.RulesEntities.Solidaria.Entities
 
         public InvoiceToCheckSolidaria(string radNumber, IExternalDataLoader loader)
         {
-
             RadNumber = radNumber;
             _loader = loader;
         }
 
         public enum DocumentTypeEnum { CC = 1, DE, NIT, TI, PA, TSS, SEN, FDI, RC, AS, MS, TP, PE, PT, CN, SC, CD }
-        //public string RadNumber { get; set; }
-        public string IpsNit { get; set; }
-        public string ModuleName { get; set; }
 
-        /// <summary>
-        /// Furisp1, involvedVehicleInformation, soatnumber =  poliza
-        /// </summary>
-        public string SoatNumber { get; set; }
+        /// <summary> NIT del prestador (Provider.IdNumber) </summary>
+        public string IpsNit { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Furisp1, involvedVehicleInformation, licenseplate = placa
-        /// </summary>
-        public string LicensePlate { get; set; }
+        /// <summary> Estado / módulo de proceso de la factura (BusinessInvoiceStatus u otro campo lógico) </summary>
+        public string ModuleName { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Furisp1, victimData, identificationnumber = número de documento de identidad
-        /// </summary>
-        public string VictimId { get; set; }
+        /// <summary> Número de póliza SOAT o SIRAS (Claim.Vehicle.Soat.Policy.Number | SIRASFilingNumber) </summary>
+        public string SoatNumber { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Furisp1, victimData, DocumentType, value = tipo de documento
-        /// </summary>
-        public string DocumentType { get; set; }
+        /// <summary> Placa del vehículo (Claim.Vehicle.PlateNumber) </summary>
+        public string LicensePlate { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Furisp1, catastrophicPlaceEvent, EventDate = Fecha de ocurrencia del evento
-        /// </summary>
+        /// <summary> Identificación de la víctima principal (Claim.Victims[0].IdNumber) </summary>
+        public string VictimId { get; set; } = string.Empty;
+
+        /// <summary> Tipo documento víctima (Claim.Victims[0].IdType.Code) </summary>
+        public string DocumentType { get; set; } = string.Empty;
+
+        /// <summary> Fecha del evento (Claim.Event.Date) </summary>
         public Date EventDate { get; set; }
 
-        /// <summary>
-        /// Furisp1, victimData, DeadDate = Fecha en caso de muerte
-        /// </summary>
+        /// <summary> Fecha fallecimiento (Claim.Victims[0].DeathInfo.DeathDate) </summary>
         public Date DeathDate { get; set; }
 
-        /// <summary>
-        /// Furisp1, claimData, NotificationDate = fecha de reclamación
-        /// </summary>
+        /// <summary> Fecha de radicación / reclamación (FillingDate o InsuranceFillingDate) </summary>
         public Date ClaimDate { get; set; }
 
-        /// <summary>
-        /// Furisp2, claimData, claimdocumentdate = fecha de facturación
-        /// </summary>
+        /// <summary> Fecha de emisión de la factura (InvoiceEmissionDate) </summary>
         public Date InvoiceDate { get; set; }
 
-        /// <summary>
-        /// Furisp1, medicalCertification, medicalcertificationincomedate = fecha ingreso
-        /// </summary>
+        /// <summary> Fecha ingreso atención médica (Victim.MedicalAttention.IncomeDate) </summary>
         public Date IncomeDate { get; set; }
 
-        /// <summary>
-        /// Furisp1, medicalCertification, medicalcertificationegressdate = fecha egreso
-        /// </summary>
+        /// <summary> Fecha egreso atención médica (Victim.MedicalAttention.EgressDate) </summary>
         public Date EgressDate { get; set; }
 
-        /// <summary>
-        /// Furisp1, claimData, invoicenumber = número de factura furisp1
-        /// </summary>
-        public string InvoiceNumberF1 { get; set; }
+        /// <summary> Número de factura “F1” (compatibilidad; Solidaria usa uno principal) </summary>
+        public string InvoiceNumberF1 { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Furisp2, claimData, reclaiminvoicenumber = = número de factura furisp2
-        /// </summary>
-        public string InvoiceNumberF2 { get; set; }
+        /// <summary> Número de factura “F2” (compatibilidad; reutiliza el mismo de Solidaria) </summary>
+        public string InvoiceNumberF2 { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Furisp1, remisionDate, remisionDate = fecha transporte primario*****
-        /// </summary>
+        /// <summary> Fecha de transporte primario (No análogo directo; se mantiene para futuras extensiones) </summary>
         public Date PrimaryTransportationDate { get; set; }
 
-        /// <summary>
-        /// Furips2, invoice, servicelist, arrays[], mosData, providerinvoicedate = Fecha factura proveedor MAOS
-        /// </summary>
+        /// <summary> Fecha factura proveedor MAOS (sin análogo directo; se deja para compatibilidad) </summary>
         public Date InvoiceMAOSDate { get; set; }
 
-        /// <summary>
-        /// Research, Response Date = fecha de resultado de la investigación
-        /// </summary>
+        /// <summary> Fecha de resultado investigación (max ResponseDate filtrado) </summary>
         public Date InvestigationResponseDate { get; set; }
 
-        /// <summary>
-        /// Furips2, ClaimData, claimprovidernit
-        /// </summary>
-        public string IpsNitF2 { get; set; }
+        /// <summary> NIT proveedor en “segunda reclamación” (compatibilidad FURIPS) </summary>
+        public string IpsNitF2 { get; set; } = string.Empty;
 
-        /// <summary>
-        /// furips2, claimData, claiminvoicevalue = Valor factura
-        /// </summary>
-        public Currency InvoiceValue { get; set; }
+        /// <summary> Valor de la factura (InvoiceValue) </summary>
+        public Currency InvoiceValue { get; set; } = Currency.Create("0");
 
-        /// <summary>
-        /// furips1, coveragesClaimed, totalbilledmedicalexpenses = Total facturado gastos médicos
-        /// </summary>
-        public Currency BilledMedicalExpenses { get; set; }
+        /// <summary> Total facturado gastos médicos (Victim.ProtectionsClaimed.MedicalSurgicalExpenses.TotalBilled) </summary>
+        public Currency BilledMedicalExpenses { get; set; } = Currency.Create("0");
 
-        /// <summary>
-        /// furips1, coveragesClaimed, totalbilledtransportation = Total facturado transporte
-        /// </summary>
-        public Currency BilledTransportation { get; set; }
+        /// <summary> Total facturado transporte (Victim.ProtectionsClaimed.VictimTransportAndMobilizationExpenses.TotalBilled) </summary>
+        public Currency BilledTransportation { get; set; } = Currency.Create("0");
 
-        /// <summary>
-        /// InvoiceRips collection
-        /// </summary>
-        public string IpsNitRips { get; set; }
+        /// <summary> (Compatibilidad) NIT RIPS si existiera proceso paralelo </summary>
+        public string IpsNitRips { get; set; } = string.Empty;
 
-        /// <summary>
-        /// InvoiceRips collection
-        /// </summary>
-        public string InvoiceNumberRips { get; set; }
+        public string InvoiceNumberRips { get; set; } = string.Empty;
 
-        /// <summary>
-        /// InvoiceRips collection
-        /// </summary>
-        public string IpsNitFurips { get; set; }
+        public string IpsNitFurips { get; set; } = string.Empty;
 
-        /// <summary>
-        /// InvoiceRips collection
-        /// </summary>
-        public string InvoiceNumberFurips { get; set; }
+        public string InvoiceNumberFurips { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Invoice FE collection
-        /// </summary>
-        public string IpsNitFE { get; set; }
+        /// <summary> NIT factura electrónica (ElectronicBilling.NitIps) </summary>
+        public string IpsNitFE { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Invoice FE collection
-        /// </summary>
-        public string InvoiceNumberFE { get; set; }
+        /// <summary> Número factura electrónica (ElectronicBilling.InvoiceNumber) </summary>
+        public string InvoiceNumberFE { get; set; } = string.Empty;
 
+        /// <summary> Parámetro de verificación telefónica (monto) </summary>
+        public Currency InvoicePhoneVerificationValue { get; set; } = Currency.Create("0");
 
-        /// <summary>
-        /// InvoicePhoneVerificationValue - Parametro para validar si el  siniestro requiere verificación telefonica  (se valdia con el valor de la factura)
-        /// </summary>
-        public Currency InvoicePhoneVerificationValue { get; set; }
-
-        /// <summary>
-        /// Number of ocurrencies when the license plate has a multiple different event dates in the Invoice collection
-        /// </summary>
+        /// <summary> Métricas de ocurrencias de placa vs fechas (si se calculan) </summary>
         public int SamePlateDifferentEventNumber { get; set; }
 
-        /// <summary>
-        /// Number of ocurrencies when the license plate has a multiple different event dates, and the vehicle is 10(Motorcylce) in the Invoice collection
-        /// </summary>
         public int SamePlateForMotorcycleDifferentEventNumber { get; set; }
 
-        /// <summary>
-        /// Number of ocurrencies when the VictimId has a multiple different event dates in the Invoice collection
-        /// </summary>
         public int SameVictimIdDifferentEventNumber { get; set; }
 
-        /// <summary>
-        /// Esa propieda almacena el valor total glosado de la factura
-        /// </summary>
-        public Currency TotalGlossedValue { get; set; }
-        /// <summary>
-        /// Dato para validar si el valor total de la factura es igual al valor parametrizado
-        /// </summary>
-        public Currency TotalAuthorizedValue { get; set; }
+        /// <summary> Valor total glosado (Claim.TotalGlossValues.TotalInvoiceObjectedValue) </summary>
+        public Currency TotalGlossedValue { get; set; } = Currency.Create("0");
 
-        /// <summary>
-        /// Amparo Médico
-        /// </summary>
-        public string HelpType { get; set; }
-        /// <summary>
-        /// Validación para Amparo Médico
-        /// </summary>
-        public string HelpTypeToValidate { get; set; }
+        /// <summary> Valor total autorizado / aprobado (Claim.TotalGlossValues.TotalInvoiceApprovedValue) </summary>
+        public Currency TotalAuthorizedValue { get; set; } = Currency.Create("0");
 
-        /// <summary>
-        /// Usuario que hizo la reclamación
-        /// </summary>
-        public string UserClaim { get; set; }
+        /// <summary> Tipo de amparo (ProtectionType.Value) </summary>
+        public string HelpType { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Número de placa de ambulancia
-        /// </summary>
-        public string LicensePlateAmbulance { get; set; }
+        /// <summary> Valor parametrizado para comparar amparo </summary>
+        public string HelpTypeToValidate { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Número de factura de la reclamación
-        /// </summary>
-        public string InvoiceNumber { get; set; }
+        /// <summary> Usuario que hizo la reclamación (ClaimsQueue.UserAccount) </summary>
+        public string UserClaim { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Validacion de siniestros en diferentes radicados
-        /// </summary>
+        /// <summary> Placa de ambulancia (Victim.RemissionInfo.Transport.PrimaryTransferAmbulancePlate) </summary>
+        public string LicensePlateAmbulance { get; set; } = string.Empty;
+
+        /// <summary> Número de factura general (InvoiceNumber) </summary>
+        public string InvoiceNumber { get; set; } = string.Empty;
+
+        /// <summary> Validación siniestro agregado (sinister query) </summary>
         public SinisterAggregation SinisterAggretation { get; set; }
 
-        /// <summary>
-        /// Validacion de procedimientos legales - archivo matriz
-        /// </summary>
-        public List<DisputeProcessEntity> ProcessAndContracts { get; set; }
+        /// <summary> Procesos legales y contratos (agregación legal / dispute) </summary>
+        public List<DisputeProcessEntity> ProcessAndContracts { get; set; } = new();
+
+        /// <summary> Alertas base (SolidariaInvoiceData.Alerts) convertidas </summary>
+        public AlertSolidaria[] AlertsEncountered { get; set; } = [];
+
+        /// <summary> Resultados de investigación (ResearchData) </summary>
+        public ResearchEntity[] Research { get; set; } = [];
 
         /// <summary>
-        /// Lista de alertas que existen en base de datos para el radicado en validación
-        /// </summary>
-        public Alert[] AlertsEncountered { get; set; }
-
-        /// <summary>
-        /// Contiene los resultados de investigación
-        /// </summary>
-        public ResearchEntity[] Research { get; set; }
-
-        /// <summary>
-        ///  Información de glosas
+        /// Información legacy de glosas (solo para compatibilidad;
+        /// en Solidaria usar Claim.Victims[].Services[].Glosses y Claim.TotalGlossValues)
         /// </summary>
         public InvoiceInformation? Invoice { get; set; }
 
-        /// <summary>
-        /// List of alerts
-        /// </summary>
-        public List<Alert> Alerts { get; set; } = [];
+        /// <summary> Lista de alertas transformadas genéricas (si reglas comunes las requieren) </summary>
+        public List<Alert> Alerts { get; set; } = new();
 
-        /// <summary>
-        /// Validacion de facturas en diferentes radicados
-        /// </summary>
         public InvoiceDifferentRadicates InvoiceDifferentRadicates { get; set; }
-        /// <summary>
-        /// Validacion Objeciones previas
-        /// </summary>
+
         public InvoiceDifferentRadicates PreviousObjections { get; set; }
-        /// <summary>
-        /// Valdiacion Multiples transportes
-        /// </summary>
+
         public InvoiceDifferentRadicates MultipleTransposrts { get; set; }
+
         public ValidationAggregationRules_31_40 ValidationAggregationRules_31_40 { get; set; }
 
-        /// <summary>
-        /// Validacion de siniestros y resultados de einvestigacion
-        /// </summary>
+        /// <summary> Solicitud de investigación (ResearchRequest aggregation) </summary>
         public ResearchRequest ResearchRequest { get; set; }
-        public string VehicleType { get; set; }
+
+        /// <summary> Tipo de vehículo (Claim.Vehicle.Type.Value) </summary>
+        public string VehicleType { get; set; } = string.Empty;
+
+        /// <summary> Snapshot de datos del proveedor corporativo (catálogo interno) </summary>
         public ProviderData? ProviderData { get; set; }
+
+        /// <summary> Lista de códigos de servicios (Services[].ServiceInfo.Code) para reglas transversales </summary>
         public List<string>? ListServiceCodes { get; set; }
-        public List<string>? NotNullErrorsInModel { get; set; } = [];
-        public List<string>? TypeErrorsInModel { get; set; } = [];
+
+        /// <summary> Errores de obligatoriedad detectados por el validador de modelo </summary>
+        public List<string>? NotNullErrorsInModel { get; set; } = new();
+
+        /// <summary> Errores de formato/tipo detectados por el validador de modelo </summary>
+        public List<string>? TypeErrorsInModel { get; set; } = new();
+
+        /// <summary> Mapa de tipificación que puede ser llenado por reglas (clave lógica -> descripción) </summary>
         public Dictionary<string, string> TypificationMap { get; set; } = new();
+
+        /// <summary> Mapa de banderas de prioridad (clave de regla -> true/false) </summary>
         public Dictionary<string, bool> HasPriorityMap { get; set; } = new();
     }
 }

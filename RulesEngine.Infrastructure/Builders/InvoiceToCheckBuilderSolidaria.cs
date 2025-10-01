@@ -2,7 +2,7 @@
 using MongoDB.Bson.Serialization;
 using RulesEngine.Application.Abstractions.Services;
 using RulesEngine.Application.Builders;
-using RulesEngine.Application.Clients.Mundial.Validatior;
+using RulesEngine.Application.Clients.Solidaria.Validator;
 using RulesEngine.Application.Common.Enumerations;
 using RulesEngine.Application.DataSources;
 using RulesEngine.Application.InputSources;
@@ -14,30 +14,34 @@ using RulesEngine.Domain.Parameters.Repositories;
 using RulesEngine.Domain.Primitives;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 using RulesEngine.Infrastructure.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RulesEngine.Infrastructure.Builders
 {
     public class InvoiceToCheckBuilderSolidaria : IInvoiceToCheckBuilder
     {
         public string Tenant => "Solidaria";
+
         private readonly IEnumerable<IExternalDataLoader> _loaders;
         private readonly IUtilityService _utilityService;
         private readonly IParameterRepository _parameterRepository;
         private readonly IInvoiceRepository _invoiceRepository;
         private readonly IBlobStorageRepository _blobStorageRepository;
         private readonly IConstantsRepository _constantsRepository;
-        private readonly IQueryExecutorPerPhase _queryExecutor;
-        private readonly IQueryExecutorPerPhaseFactory _phaseFactory;
+        private readonly IQueryExecutorPerPhaseSolidaria _executor;
 
-
-        public InvoiceToCheckBuilderSolidaria(IEnumerable<IExternalDataLoader> loaders,
-                                    IUtilityService utilityService,
-                                    IParameterRepository parameterRepository,
-                                    IInvoiceRepository invoiceRepository,
-                                    IBlobStorageRepository blobStorageRepository,
-                                    IConstantsRepository constantsRepository,
-                                    IQueryExecutorPerPhase queryExecutor,
-                                    IQueryExecutorPerPhaseFactory phaseFactory)
+        // Constructor simplificado: YA NO usamos la fábrica genérica
+        public InvoiceToCheckBuilderSolidaria(
+            IEnumerable<IExternalDataLoader> loaders,
+            IUtilityService utilityService,
+            IParameterRepository parameterRepository,
+            IInvoiceRepository invoiceRepository,
+            IBlobStorageRepository blobStorageRepository,
+            IConstantsRepository constantsRepository,
+            IQueryExecutorPerPhaseSolidaria executor)
         {
             _loaders = loaders;
             _utilityService = utilityService;
@@ -45,66 +49,91 @@ namespace RulesEngine.Infrastructure.Builders
             _invoiceRepository = invoiceRepository;
             _blobStorageRepository = blobStorageRepository;
             _constantsRepository = constantsRepository;
-            _queryExecutor = queryExecutor;
-            _phaseFactory = phaseFactory;
+            _executor = executor;
         }
 
         public async Task<IInvoiceToCheckContext> BuildAsync(string radNumber, string moduleName, string stage, string tenant)
         {
-            var _loader = _loaders.FirstOrDefault(l =>
-            string.Equals(l.Tenant, tenant, StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException($"No hay loader para el tenant '{tenant}'.");
-            // Se obtiene del cache el blob
-            var blobStorage = await _loader.GetBlobStorageAsync(tenant);
+            if (!string.Equals(tenant, Tenant, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"Builder incorrecto para tenant '{tenant}'. Se esperaba '{Tenant}'.");
 
-            // Se obtiene de la agregación parametrizada del cache
-            var parameter = await _loader.GetInvoiceAgregationParameterAsync(tenant);
+            // Loader específico Solidaria
+            var loader = _loaders.FirstOrDefault(l =>
+                string.Equals(l.Tenant, tenant, StringComparison.OrdinalIgnoreCase))
+                ?? throw new InvalidOperationException($"No hay loader para el tenant '{tenant}'.");
 
-            // Se reemplazan los valores para obtener la invoice
-            string? json = parameter.Value.Replace("##RadNumber##", radNumber).Replace("##ModuleName##", moduleName);
+            // Blob storage (puede provenir de caché interna de loader)
+            var blobStorage = await loader.GetBlobStorageAsync(tenant);
 
-            // Se crea objeto Bson y se consulta la invoice
-            var bsonDocs = BsonSerializer.Deserialize<BsonDocument[]>(json);
-            var invoiceDataDoc = await _invoiceRepository.GetInvoiceByAggregation(bsonDocs);
+            // Parámetro de agregación que obtiene la factura
+            var parameter = await loader.GetInvoiceAgregationParameterAsync(tenant);
+
+            // Construir pipeline: se asume que el parámetro Value es un JSON de agregación con placeholders
+            string jsonPipeline = parameter.Value
+                .Replace("##RadNumber##", radNumber)
+                .Replace("##ModuleName##", moduleName);
+
+            var pipelineDocs = BsonSerializer.Deserialize<BsonDocument[]>(jsonPipeline);
+            var invoiceDataDoc = await _invoiceRepository.GetInvoiceByAggregation(pipelineDocs);
             if (invoiceDataDoc == null)
                 throw new Exception("No se encontró información de la factura");
 
-            var invoiceData = BsonSerializer.Deserialize<InvoiceData>(invoiceDataDoc.ToJson());
+            // Deserializar al modelo propio Solidaria (sin herencia)
+            var invoiceData = BsonSerializer.Deserialize<SolidariaInvoiceData>(invoiceDataDoc);
 
-            var executor = _phaseFactory.ForTenant(tenant);
+            // Opcional: forzar ModuleName si deseas asegurarlo al valor entrante
+            if (string.IsNullOrWhiteSpace(invoiceData.ModuleName))
+                invoiceData.ModuleName = moduleName;
+
+            // Ejecutar lógica por fase usando el executor específico Solidaria
             switch (stage)
             {
                 case "Fase_01":
                 case "Fase_03":
-                    await _queryExecutor.QueryPerStage01(invoiceData, radNumber, tenant);
+                    await _executor.QueryPerStage01(invoiceData, radNumber, tenant);
                     break;
                 case "Fase_02":
-                    await _queryExecutor.QueryPerStage02(invoiceData, radNumber, tenant);
+                    await _executor.QueryPerStage02(invoiceData, radNumber, tenant);
+                    break;
+                default:
+                    // Puedes lanzar excepción si stage desconocida
+                    // throw new ArgumentException($"Etapa '{stage}' no soportada para Solidaria");
                     break;
             }
 
-            var validations = new InvoiceValidator(_constantsRepository);
-            var result = await validations.ValidateAsync(invoiceData);
+            // Validaciones de negocio / formato para Solidaria
+            var validator = new InvoiceValidatorSolidaria(_constantsRepository);
+            var validationResult = await validator.ValidateAsync(invoiceData);
 
-            if (!result.IsValid)
+            if (!validationResult.IsValid)
             {
-                string[] required = ["requerida", "requerido", "obligatorio", "obligatoria"];
-                // Filtrar los errores NotNull
-                invoiceData.NotNullErrorsInModel = result.Errors
-                .Where(error =>
-                    (error.ErrorCode == "NotNullValidator" || error.ErrorCode == "NotEmptyValidator") ||
-                    (error.ErrorCode == "CustomMustValidator" && required.Any(r => error.ErrorMessage.Contains(r))))
-                .Select(error => error.FormattedMessagePlaceholderValues["PropertyName"]?.ToString())
-                .Distinct()
-                .ToList()!;
+                invoiceData.NotNullErrorsInModel ??= new List<string>();
+                invoiceData.TypeErrorsInModel ??= new List<string>();
 
-                invoiceData.TypeErrorsInModel = result.Errors
-                    .Where(error => (error.ErrorCode == "CustomMustValidator") && !required.Any(r => error.ErrorMessage.Contains(r)))
-                    .Select(error => error.FormattedMessagePlaceholderValues["PropertyName"]?.ToString())
+                string[] requiredTokens = ["requerida", "requerido", "obligatorio", "obligatoria"];
+
+                invoiceData.NotNullErrorsInModel = validationResult.Errors
+                    .Where(err =>
+                        err.ErrorCode == "NotNullValidator" ||
+                        err.ErrorCode == "NotEmptyValidator" ||
+                        (err.ErrorCode == "CustomMustValidator" &&
+                         requiredTokens.Any(t => err.ErrorMessage.Contains(t, StringComparison.OrdinalIgnoreCase))))
+                    .Select(err => err.FormattedMessagePlaceholderValues.TryGetValue("PropertyName", out var nameObj) ? nameObj?.ToString() : null)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct()
+                    .ToList()!;
+
+                invoiceData.TypeErrorsInModel = validationResult.Errors
+                    .Where(err =>
+                        err.ErrorCode == "CustomMustValidator" &&
+                        !requiredTokens.Any(t => err.ErrorMessage.Contains(t, StringComparison.OrdinalIgnoreCase)))
+                    .Select(err => err.FormattedMessagePlaceholderValues.TryGetValue("PropertyName", out var nameObj) ? nameObj?.ToString() : null)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
                     .Distinct()
                     .ToList()!;
             }
 
+            // Matrices e insumos externos (Blob)
             var inputSources = new InputSourcesModel
             {
                 FraudulentIps = new(blobStorage.ConnectionString, BlobStorageExtensions.FindResource(blobStorage, InputSources.MatrizIpsFraudulentas)),
@@ -119,13 +148,18 @@ namespace RulesEngine.Infrastructure.Builders
                 ServiceCodes = new(blobStorage.ConnectionString, BlobStorageExtensions.FindResource(blobStorage, InputSources.ListadoDeCodigosDeServicios))
             };
 
+            // Construye el contexto usable por motor de reglas
+            var context = new InvoiceToCheckSolidaria(radNumber, loader);
+            context = await new LoadInputSourcesSolidaria(
+                context,
+                invoiceData,
+                stage,
+                inputSources,
+                _invoiceRepository,
+                _utilityService)
+                .Create();
 
-            // Construir InvoiceToCheck usando LoadInputSources
-            var invoice = new InvoiceToCheckSolidaria(radNumber, _loader);
-            invoice = await new LoadInputSourcesSolidaria(invoice, invoiceData, stage, inputSources, _invoiceRepository, _utilityService).Create();
-
-            return invoice;
-
+            return context;
         }
     }
 }

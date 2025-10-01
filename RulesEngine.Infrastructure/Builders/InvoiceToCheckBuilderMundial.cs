@@ -69,16 +69,16 @@ namespace RulesEngine.Infrastructure.Builders
             var invoiceData = BsonSerializer.Deserialize<InvoiceData>(invoiceDataDoc.ToJson());
 
             var executor = _phaseFactory.ForTenant(tenant);
-            switch (stage)
-            {
-                case "Fase_01":
-                case "Fase_03":
-                    await executor.QueryPerStage01(invoiceData, radNumber, tenant);
-                    break;
-                case "Fase_02":
-                    await executor.QueryPerStage02(invoiceData, radNumber, tenant);
-                    break;
-            }
+            //switch (stage)
+            //{
+            //    case "Fase_01":
+            //    case "Fase_03":
+            //        await executor.QueryPerStage01(invoiceData, radNumber, tenant);
+            //        break;
+            //    case "Fase_02":
+            //        await executor.QueryPerStage02(invoiceData, radNumber, tenant);
+            //        break;
+            //}
 
             var validations = new InvoiceValidator(_constantsRepository);
             var result = await validations.ValidateAsync(invoiceData);

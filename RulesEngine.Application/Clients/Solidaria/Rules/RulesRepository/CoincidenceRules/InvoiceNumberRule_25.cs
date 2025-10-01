@@ -1,14 +1,6 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
-using NRules.Fluent.Dsl;
-using RulesEngine.Domain.Invoices.Repositories;
-using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
-using RulesEngine.Domain.Invoices.Entities;
-using Autofac;
-using NRules.Fluent;
-using Autofac.Core;
+﻿using NRules.Fluent.Dsl;
 using RulesEngine.Domain.Common;
-using RulesEngine.Domain.RulesEntities.Mundial.Entities;
+using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.CoincidenceRules
 {
@@ -16,7 +8,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Coinci
     {
         public override void Define()
         {
-            InvoiceToCheck? invoiceToCheck = default;
+            InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
                 .Match(() => invoiceToCheck!, x => x.InvoiceNumberF1 != x.InvoiceNumberF2);

@@ -9,7 +9,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Claima
     {
         public override void Define()
         {
-            InvoiceToCheck? invoiceToCheck = default;
+            InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
                 .Match(() => invoiceToCheck, x => x.IpsNitList!.Any(c=>c.NitIps == x.IpsNit));

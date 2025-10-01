@@ -1,6 +1,7 @@
 ﻿using NRules.Fluent.Dsl;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Mundial.Entities;
+using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 using RulesEngine.Domain.ValueObjects;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.PrescriptionRules
@@ -9,7 +10,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Prescr
     {
         public override void Define()
         {
-            InvoiceToCheck? invoiceToCheck = default;
+            InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
                 .Match(() => invoiceToCheck!, x => Date.IsNotNullable(x.EventDate, x.ClaimDate) &&

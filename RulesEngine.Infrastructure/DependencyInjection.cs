@@ -42,7 +42,7 @@ namespace RulesEngine.Infrastructure
             services.AddScoped<IActionService, ActionServiceMundial>();
             services.AddScoped<IRuleSessionBuilder,RuleSessionBuilder>();
             services.AddScoped<IQueryExecutorPerPhase, QueryExecutorPerPhaseMundial>();
-            services.AddScoped<IQueryExecutorPerPhase, QueryExecutorPerPhaseSolidaria>();
+            services.AddScoped<IQueryExecutorPerPhaseSolidaria, QueryExecutorPerPhaseSolidaria>();
             services.AddScoped<IInvoiceToCheckBuilder, InvoiceToCheckBuilderMundial>();
             services.AddScoped<IInvoiceToCheckBuilder, InvoiceToCheckBuilderSolidaria>();
             services.AddScoped<IInvoiceToCheckBuilderFactory, InvoiceToCheckBuilderFactory>();
