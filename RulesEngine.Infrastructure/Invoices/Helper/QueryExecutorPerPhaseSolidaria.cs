@@ -98,8 +98,8 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
             string[] listBusinessCase = ["SOL-002", "SOL-004", "SOL-006", "SOL-008-Copy", "SOL-011"];
             var groupAggregations = await _loader.GetGroupAgregationData(listBusinessCase, tenant);
 
-            string providerIdNumber = data.Provider?.IdNumber ?? string.Empty;
-            data.ElectronicBilling = await _loader.GetElectronicBilling(data.InvoiceNumber, providerIdNumber);
+            string providerIdNumber = data.IpsNit;
+            //data.ElectronicBilling = await _loader.GetElectronicBilling(data.InvoiceNumber, providerIdNumber);
 
             // SOL-004 Doble cobro
             var doubleChargeParameter = groupAggregations.FirstOrDefault(x => x.BusinessCode == "SOL-004");
@@ -108,13 +108,13 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 string q = ReplaceSafe(doubleChargeParameter.Value, new()
                 {
                     { "##NitIps##", providerIdNumber },
-                    { "##InvoiceNumber##", data.InvoiceNumber },
+                    { "##InvoiceNumber##", data.Sections.ClaimData.InvoiceNumber },
                     { "##RadNumber##", radNumber }
                 });
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.InvoiceDifferentRadicates = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
+                //if (result != null)
+                //    data.InvoiceDifferentRadicates = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
             }
 
             // SOL-002 Validación siniestro
@@ -125,8 +125,8 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 string q = sinisterParameter.Value.Replace("##AccidentNumber##", accidentNumber);
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.ValidationSinister = BsonSerializer.Deserialize<SinisterAggregation>(result);
+                //if (result != null)
+                //    data.ValidationSinister = BsonSerializer.Deserialize<SinisterAggregation>(result);
             }
 
             // SOL-006 Múltiples transportes
@@ -141,14 +141,14 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 });
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.MultipleTransports = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
+                //if (result != null)
+                //    data.MultipleTransports = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
             }
 
             // SOL-011 Verificación telefónica
             var phoneParam = groupAggregations.FirstOrDefault(x => x.BusinessCode == "SOL-011");
-            if (phoneParam != null)
-                data.InvoicePhoneVerificationValue = phoneParam.Value;
+            //if (phoneParam != null)
+            //    data.InvoicePhoneVerificationValue = phoneParam.Value;
 
             // Reglas 31-40 (si aplica aún MUND-008-Copy para este tenant)
             var rulesParam = groupAggregations.FirstOrDefault(x => x.BusinessCode == "MUND-008-Copy");
@@ -175,8 +175,8 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
             }
 
             // ProviderData (catálogo interno)
-            if (data.ProviderData == null && !string.IsNullOrWhiteSpace(providerIdNumber))
-                data.ProviderData = await _providerRepository.FindOneAsync(p => p.NitIps == providerIdNumber);
+            //if (data.ProviderData == null && !string.IsNullOrWhiteSpace(providerIdNumber))
+            //    data.ProviderData = await _providerRepository.FindOneAsync(p => p.NitIps == providerIdNumber);
         }
 
         // ================== LÓGICA FASE 02 ==================
@@ -185,8 +185,8 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
             string[] listBusinessCase = ["MUND-004", "MUND-002", "MUND-005", "MUND-006", "MUND-007"];
             var groupAggregations = await _loader.GetGroupAgregationData(listBusinessCase, tenant);
 
-            string providerIdNumber = data.Provider?.IdNumber ?? string.Empty;
-            data.ElectronicBilling = await _loader.GetElectronicBilling(data.InvoiceNumber, providerIdNumber);
+            string providerIdNumber = data.IpsNit ?? string.Empty;
+            //data.ElectronicBilling = await _loader.GetElectronicBilling(data.InvoiceNumber, providerIdNumber);
 
             // MUND-004 Doble cobro
             var doubleCharge = groupAggregations.FirstOrDefault(x => x.BusinessCode == "MUND-004");
@@ -195,22 +195,22 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 string q = ReplaceSafe(doubleCharge.Value, new()
                 {
                     { "##NitIps##", providerIdNumber },
-                    { "##InvoiceNumber##", data.InvoiceNumber },
+                    { "##InvoiceNumber##", data.Sections.ClaimData.InvoiceNumber},
                     { "##RadNumber##", radNumber }
                 });
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.InvoiceDifferentRadicates = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
+                //if (result != null)
+                //    data.InvoiceDifferentRadicates = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
             }
 
             // Cache provider
             string providerKey = $"provider:{providerIdNumber}";
-            data.ProviderData = await _utilityService.GetOrSetDataCache(providerKey, async () =>
-            {
-                if (string.IsNullOrWhiteSpace(providerIdNumber)) return null;
-                return await _providerRepository.FindOneAsync(x => x.NitIps == providerIdNumber);
-            }, 2);
+            //data.ProviderData = await _utilityService.GetOrSetDataCache(providerKey, async () =>
+            //{
+            //    if (string.IsNullOrWhiteSpace(providerIdNumber)) return null;
+            //    return await _providerRepository.FindOneAsync(x => x.NitIps == providerIdNumber);
+            //}, 2);
 
             // MUND-002 Validación siniestro
             var sinisterParam = groupAggregations.FirstOrDefault(x => x.BusinessCode == "MUND-002" && x.Tenant == tenant);
@@ -220,8 +220,8 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 string q = sinisterParam.Value.Replace("##AccidentNumber##", accidentNumber);
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.ValidationSinister = BsonSerializer.Deserialize<SinisterAggregation>(result);
+                //if (result != null)
+                //    data.ValidationSinister = BsonSerializer.Deserialize<SinisterAggregation>(result);
             }
 
             // MUND-005 Objeciones previas
@@ -231,13 +231,13 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 string q = ReplaceSafe(prevObjParam.Value, new()
                 {
                     { "##NitIps##", providerIdNumber },
-                    { "##InvoiceNumber##", data.InvoiceNumber },
+                    { "##InvoiceNumber##",data.Sections.ClaimData.InvoiceNumber },
                     { "##RadNumber##", radNumber }
                 });
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.PreviousObjections = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
+                //if (result != null)
+                //    data.PreviousObjections = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
             }
 
             // MUND-006 Múltiples transportes
@@ -252,8 +252,8 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 });
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.MultipleTransports = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
+                //if (result != null)
+                //    data.MultipleTransports = BsonSerializer.Deserialize<InvoiceDifferentRadicates>(result);
             }
 
             // MUND-007 Solicitud investigación
@@ -268,8 +268,8 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                 });
                 var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(q);
                 var result = await _invoiceRepository.GetInvoiceByAggregation(pipeline);
-                if (result != null)
-                    data.ResearchRequest = BsonSerializer.Deserialize<ResearchRequest>(result);
+                //if (result != null)
+                //    data.ResearchRequest = BsonSerializer.Deserialize<ResearchRequest>(result);
             }
 
             // Parametrización tipo de ayuda (0207)
@@ -292,26 +292,26 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
                     : Builders<ResearchEntity>.Filter.Or(dateFilters));
 
             var researchs = await _researchRepository.FilterBy(researchFilter);
-            data.ResearchData = researchs?.ToArray() ?? Array.Empty<ResearchEntity>();
+            //data.ResearchData = researchs?.ToArray() ?? Array.Empty<ResearchEntity>();
 
             // ClaimsQueue
             var queueFilter = Builders<ClaimsQueueEntity>.Filter.Eq(x => x.RadNumber, radNumber);
-            data.ClaimsQueue = await _claimsQueueRepository.FindOneAsync(queueFilter);
+            //data.ClaimsQueue = await _claimsQueueRepository.FindOneAsync(queueFilter);
 
             // Legal Proceedings
-            var legalFilter = Builders<LegalProceedingsEntity>.Filter.Eq(x => x.ClaimantId, providerIdNumber) &
-                              Builders<LegalProceedingsEntity>.Filter.Eq(x => x.InvoiceProcess, data.InvoiceNumber);
-            data.LegalProceedings = await _legalProceedingsRepository.FilterBy(legalFilter);
+            //var legalFilter = Builders<LegalProceedingsEntity>.Filter.Eq(x => x.ClaimantId, providerIdNumber) &
+            //                  Builders<LegalProceedingsEntity>.Filter.Eq(x => x.InvoiceProcess, data.InvoiceNumber);
+            //data.LegalProceedings = await _legalProceedingsRepository.FilterBy(legalFilter);
 
             // Transaction Contracts
-            var contractsFilter = Builders<ConsolidatedTransactionContracts>.Filter.Eq(x => x.ClaimantId, providerIdNumber) &
-                                  Builders<ConsolidatedTransactionContracts>.Filter.Eq(x => x.ClaimNumber, data.InvoiceNumber);
-            data.ConsolidatedTransactionContracts = await _transactionContracts.FilterBy(contractsFilter);
+            //var contractsFilter = Builders<ConsolidatedTransactionContracts>.Filter.Eq(x => x.ClaimantId, providerIdNumber) &
+            //                      Builders<ConsolidatedTransactionContracts>.Filter.Eq(x => x.ClaimNumber, data.InvoiceNumber);
+           // data.ConsolidatedTransactionContracts = await _transactionContracts.FilterBy(contractsFilter);
 
             // Dispute / Procesos
-            var disputeFilter = Builders<DisputeProcessEntity>.Filter.Eq(x => x.ClaimantId, providerIdNumber) &
-                                Builders<DisputeProcessEntity>.Filter.Eq(x => x.InvoiceNumber, data.InvoiceNumber);
-            data.LegalProcessesAndTransactionContractsParameters = await _processesContractsRepository.FilterBy(disputeFilter);
+            //var disputeFilter = Builders<DisputeProcessEntity>.Filter.Eq(x => x.ClaimantId, providerIdNumber) &
+            //                    Builders<DisputeProcessEntity>.Filter.Eq(x => x.InvoiceNumber, data.InvoiceNumber);
+            //data.LegalProcessesAndTransactionContractsParameters = await _processesContractsRepository.FilterBy(disputeFilter);
         }
 
         // Reemplazos seguros (null-safe)
@@ -327,26 +327,26 @@ namespace RulesEngine.Application.Mundial.Invoices.Helper
     // ================== EXTENSIONES ==================
     internal static class SolidariaInvoiceDataLogicExtensions
     {
+        //no hay accident Number
         public static string GetAccidentNumber(this SolidariaInvoiceData d)
-            => d.Claim?.Number
-               ?? d.Claim?.Vehicle?.Soat?.SIRASFilingNumber
+            => d.Sections.ClaimData.NumberClaim
                ?? string.Empty;
 
         public static string GetPrimaryAmbulancePlate(this SolidariaInvoiceData d)
-            => d.Claim?.Victims?.FirstOrDefault()?.RemissionInfo?.Transport?.PrimaryTransferAmbulancePlate
+            =>d.Sections.RemissionInfo.PrimaryTransferAmbulancePlate
                ?? string.Empty;
 
         public static string? GetVehiclePlate(this SolidariaInvoiceData d)
-            => d.Claim?.Vehicle?.PlateNumber;
+            => d.Sections.InvolvedVehicleInformation.LicensePlate;
 
         public static string? GetSoatPolicyNumber(this SolidariaInvoiceData d)
-            => d.Claim?.Vehicle?.Soat?.Policy?.Number;
+            => d.Sections.InvolvedVehicleInformation.SoatNumber;
 
         public static string? GetFirstVictimId(this SolidariaInvoiceData d)
-            => d.Claim?.Victims?.FirstOrDefault()?.IdNumber;
+            => d.Sections.VictimData.IdentificationNumber; 
 
         public static DateTime? GetEventDate(this SolidariaInvoiceData d)
-            => d.Claim?.Event?.Date;
+            =>  d.Sections.EventInformation.EventDate;
 
         public static string? ToUTCString(this DateTime? dt, string format)
             => dt.HasValue ? dt.Value.ToUniversalTime().ToString(format) : null;

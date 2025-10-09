@@ -1,11 +1,13 @@
 ﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.MedicalProtection
 {
-    public class MedicalExpensesAndTransportationExpensesStageIIRule3 : Rule
+    public class MedicalExpensesAndTransportationExpensesStageIIRule3 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
@@ -13,7 +15,8 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Medica
             When()
                 .Match(() => invoiceToCheck, x => !string.IsNullOrEmpty(x.HelpType) && !string.IsNullOrEmpty(x.HelpTypeToValidate) && x.HelpType == x.HelpTypeToValidate);
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
         }
         private static Alert CreateAlert()
         {

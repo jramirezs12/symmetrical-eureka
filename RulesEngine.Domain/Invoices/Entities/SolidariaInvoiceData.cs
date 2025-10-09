@@ -22,109 +22,370 @@ namespace RulesEngine.Domain.Invoices.Entities
     /// - Sólo mapear aquí las propiedades realmente presentes en el documento JSON de Solidaria.
     /// - Los campos de enriquecimiento (agregaciones, cálculos, datos externos) van con [BsonIgnore].
     /// </summary>
+    /// 
+    public class ClaimDataSection
+    {
+        // Mapea a: "ClaimData"
+        public string RadNumber { get; set; } = string.Empty;
+        public string InvoiceNumber { get; set; } = string.Empty;
+        public long? InvoiceValue { get; set; }
+        public DateTime? FillingDate { get; set; }
+
+        public string NumberClaim { get; set; } = string.Empty;
+
+        public long Consecutive { get; set; }
+    }
+
+    public class InvolvedVehicleInformationSection
+    {
+        // Mapea a: "InvolvedVehicleInformation"
+        public string LicensePlate { get; set; } = string.Empty;
+        public string SoatNumber { get; set; } = string.Empty;
+        public string TypeValue { get; set; } = string.Empty;
+        public DateTime? ValidityStartDate { get; set; }
+
+        public DateTime? ValidityEndDate { get; set; }
+        public string InsuranceCompany { get; set; } = string.Empty;
+        public string InsuranceStatus { get; set; } = string.Empty;
+        public string Brand { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+    }
+
+    public class VictimDataSection
+    {
+        // Mapea a: "VictimData"
+        public string IdentificationNumber { get; set; } = string.Empty;
+        public string DocumentType { get; set; } = string.Empty;
+        public DateTime? DeathDate { get; set; }
+
+        public string FirstName { get; set; } = string.Empty;
+
+        public string FirstLastName { get; set; } = string.Empty;
+
+        public string IdTypeCode { get; set; } = string.Empty;
+
+        public string IdTypeValue { get; set; } = string.Empty;
+
+        public string IdNumber { get; set; } = string.Empty;
+
+        public string Condition { get; set; } = string.Empty;
+
+
+        public long MedicalSurgicalExpenses { get; set; }
+
+        public long TotalClaimed { get; set; }
+
+        public long VictimTransportAndMobilizationExpenses { get; set; } 
+    }
+
+    public class MedicalCertificationSection
+    {
+        // Mapea a: "MedicalCertification"
+        public DateTime? IncomeDate { get; set; }
+        public DateTime? EgressDate { get; set; }
+
+        public string EgressMainDiagnosis { get; set; } = string.Empty;
+    }
+
+    public class EventInformationSection
+    {
+        // Mapea a: "EventInformation"
+        public DateTime? EventDate { get; set; }
+
+        public string Nature { get; set; } = string.Empty;
+
+        public string Cause { get; set; } = string.Empty;
+
+        public string Adress { get; set; } = string.Empty;
+
+        public DateTime Date { get; set; } 
+
+        public string Hour { get; set; } = string.Empty;
+
+        public string Department { get; set; } = string.Empty;
+
+        public string Municipality { get; set; } = string.Empty;
+
+        public string Zone { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+    }
+
+    public class RemissionInfoSection
+    {
+        // Mapea a: "RemissionInfo"
+        public string PrimaryTransferAmbulancePlate { get; set; } = string.Empty;
+    }
+
+    public class PaymentDetailsSection
+    {
+        // Mapea a: "PaymentDetails"
+        public long? PaymentValue { get; set; }
+        public long? ConsolidatedPaymentsValue { get; set; }
+    }
+
+    public class TotalGlossValuesSection
+    {
+        // Mapea a: "TotalGlossValues"
+        public long? TotalInvoiceApprovedValue { get; set; }
+        public long? TotalInvoiceObjectedValue { get; set; }
+    }
+    public class AggregationSections
+    {
+        [BsonElement("ClaimData")]
+        public ClaimDataSection ClaimData { get; set; } = new();
+
+        [BsonElement("InvolvedVehicleInformation")]
+        public InvolvedVehicleInformationSection InvolvedVehicleInformation { get; set; } = new();
+
+        [BsonElement("VictimData")]
+        public VictimDataSection VictimData { get; set; } = new();
+
+        [BsonElement("MedicalCertification")]
+        public MedicalCertificationSection MedicalCertification { get; set; } = new();
+
+        [BsonElement("EventInformation")]
+        public EventInformationSection EventInformation { get; set; } = new();
+
+        [BsonElement("RemissionInfo")]
+        public RemissionInfoSection RemissionInfo { get; set; } = new();
+
+        [BsonElement("PaymentDetails")]
+        public PaymentDetailsSection PaymentDetails { get; set; } = new();
+
+        [BsonElement("TotalGlossValues")]
+        public TotalGlossValuesSection TotalGlossValues { get; set; } = new();
+    }
     [BsonIgnoreExtraElements]
+    //public class SolidariaInvoiceData
+    //{
+
+    //    [BsonId]
+    //    [BsonRepresentation(BsonType.ObjectId)]
+    //    public string Id { get; set; } = string.Empty;
+
+
+    //    [BsonElement("RadNumber")]
+    //    public string RadNumber { get; set; } = string.Empty;
+
+    //    // Campos enriquecidos/transformados en la raíz del documento
+
+    //    // ModuleName se agregó en $addFields
+    //    [BsonElement("ModuleName")]
+    //    public string ModuleName { get; set; } = string.Empty;
+
+    //    // IpsNit se agregó en $addFields
+    //    [BsonElement("IpsNit")]
+    //    public string IpsNit { get; set; } = string.Empty;
+
+    //    // InvoiceDate se agregó en $addFields (a partir de InvoiceEmissionDate)
+    //    [BsonElement("InvoiceDate")]
+    //    public DateTime? InvoiceDate { get; set; }
+
+    //    // ClaimDate se agregó en $addFields (a partir de PaymentDetails.ClaimFormalizationDate)
+    //    [BsonElement("ClaimDate")]
+    //    public DateTime? ClaimDate { get; set; }
+
+    //    // La clave principal para la deserialización
+    //    [BsonElement("Sections")]
+    //    public AggregationSections Sections { get; set; } = new();
+
+    //    // Campos que el $project conservó del documento original
+    //    // Asumo que WorkflowData y Alerts son nodos complejos no modificados
+
+    //    // Si tus nodos Alerts y WorkflowData tienen una estructura compleja, 
+    //    // podrías usar Dictionary<string, object> si no quieres tiparlos completamente.
+    //    //[BsonElement("Alerts")]
+    //    //public List<Dictionary<string, object>>? Alerts { get; set; }
+
+    //    [BsonElement("WorkflowData")]
+    //    public Dictionary<string, object>? WorkflowData { get; set; }
+
+    //    // =========================================================================
+    //    // PROPIEDADES IGNORADAS
+    //    // Propiedades del documento original que ya NO están en la salida del $project
+    //    // =========================================================================
+
+    //    // Propiedades que probablemente NO estén en la salida del $project, por lo tanto, se ignoran.
+    //    [BsonIgnore] public long? OriginalInvoiceValue { get; set; }
+    //    [BsonIgnore] public string BusinessInvoiceStatus { get; set; } = string.Empty;
+
+
+
+    //    // Mantenemos tus propiedades de enriquecimiento marcadas con BsonIgnore
+
+    //    [BsonIgnore] public string HelpType => string.Empty;
+    //    // ... (El resto de tus propiedades BsonIgnore deben ir aquí)
+
+    //    [BsonIgnore] public List<string>? NotNullErrorsInModel { get; set; } = new();
+
+    //    [BsonIgnore] public List<string>? TypeErrorsInModel { get; set; } = new();
+
+
+    //    [BsonElement("InvoiceNumber")]
+    //    public string InvoiceNumber { get; set; } = string.Empty;
+
+
+
+    //    // ------------------ Campos específicos del JSON Solidaria ------------------
+
+    //    [BsonElement("ProcessLine")]
+    //    public CodeValue? ProcessLine { get; set; }
+
+    //    [BsonElement("SubProcessLine")]
+    //    public CodeValue? SubProcessLine { get; set; }
+
+    //    [BsonElement("ProtectionType")]
+    //    public CodeValue? ProtectionType { get; set; }
+
+    //    [BsonElement("Transaction")]
+    //    public string Transaction { get; set; } = string.Empty;
+
+    //    [BsonElement("InsuranceRadNumber")]
+    //    public string InsuranceRadNumber { get; set; } = string.Empty;
+
+    //    [BsonElement("InsuranceFillingDate")]
+    //    public DateTime? InsuranceFillingDate { get; set; }
+
+    //    [BsonElement("FillingDate")]
+    //    public DateTime? FillingDate { get; set; }
+
+    //    [BsonElement("LastRadNumber")]
+    //    public string LastRadNumber { get; set; } = string.Empty;
+
+    //    [BsonElement("LastFilingDate")]
+    //    public DateTime? LastFilingDate { get; set; }
+
+    //    [BsonElement("ResponseRGO")]
+    //    public CodeValue? ResponseRGO { get; set; }
+
+    //    [BsonElement("Cufe")]
+    //    public string Cufe { get; set; } = string.Empty;
+
+    //    [BsonElement("InvoiceValue")]
+    //    public long? InvoiceValue { get; set; }
+
+    //    [BsonElement("InvoiceEmissionDate")]
+    //    public DateTime? InvoiceEmissionDate { get; set; }
+
+    //    [BsonElement("InvoiceReceptionDate")]
+    //    public DateTime? InvoiceReceptionDate { get; set; }
+
+
+
+    //    [BsonElement("Provider")]
+    //    public ProviderNode? Provider { get; set; }
+
+    //    [BsonElement("Claim")]
+    //    public ClaimNode? Claim { get; set; }
+
+    //    [BsonElement("Alerts")]
+    //    public List<AlertNode>? AlertsNode { get; set; }
+
+    //    //[BsonElement("WorkflowData")]
+    //    //public WorkflowDataNode? WorkflowData { get; set; }
+
+    //    [BsonElement("AuditProcessFlags")]
+    //    public AuditProcessFlagsNode? AuditProcessFlags { get; set; }
+
+    //    // ------------------ ENRIQUECIMIENTOS (NO PERSISTEN) ------------------
+    //    [BsonIgnore] public string ParametrizedHelpType { get; set; } = string.Empty;
+    //    [BsonIgnore] public string InvoicePhoneVerificationValue { get; set; } = string.Empty;
+    //    [BsonIgnore] public ElectronicBillingEntity? ElectronicBilling { get; set; }
+    //    [BsonIgnore] public SinisterAggregation? ValidationSinister { get; set; }
+    //    [BsonIgnore] public InvoiceDifferentRadicates? InvoiceDifferentRadicates { get; set; }
+    //    [BsonIgnore] public InvoiceDifferentRadicates? PreviousObjections { get; set; }
+    //    [BsonIgnore] public InvoiceDifferentRadicates? MultipleTransports { get; set; }
+    //    [BsonIgnore] public ResearchRequest? ResearchRequest { get; set; }
+    //    [BsonIgnore] public ResearchEntity[]? ResearchData { get; set; }
+    //    [BsonIgnore] public ClaimsQueueEntity? ClaimsQueue { get; set; }
+    //    [BsonIgnore] public IEnumerable<ConsolidatedTransactionContracts>? ConsolidatedTransactionContracts { get; set; }
+    //    [BsonIgnore] public IEnumerable<LegalProceedingsEntity>? LegalProceedings { get; set; }
+    //    [BsonIgnore] public IEnumerable<DisputeProcessEntity>? LegalProcessesAndTransactionContractsParameters { get; set; }
+    //    [BsonIgnore] public ValidationAggregationRules_31_40? ResultAggregationRules { get; set; }
+    //    [BsonIgnore] public ProviderData? ProviderData { get; set; }
+
+
+
+    //}
+
     public class SolidariaInvoiceData
     {
-        // Id del documento (usa el _id de Mongo). Ajusta si tu colección guarda como string u ObjectId.
+        // Campos proyectados directamente desde el documento original
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = string.Empty;
 
-        // Claves operativas (estas NO deben entrar en conflicto con InvoiceData porque ya no hay herencia)
         [BsonElement("RadNumber")]
         public string RadNumber { get; set; } = string.Empty;
 
-        [BsonElement("InvoiceNumber")]
-        public string InvoiceNumber { get; set; } = string.Empty;
+        // Campos enriquecidos/transformados en la raíz del documento
 
-        // En Solidaria el estado / módulo se maneja con BusinessInvoiceStatus, pero
-        // si tu lógica reutiliza ModuleName externamente, usa esta propiedad (no marcada con BsonElement si no existe en el JSON).
-        [BsonIgnore]
+        // ModuleName se agregó en $addFields
+        [BsonElement("ModuleName")]
         public string ModuleName { get; set; } = string.Empty;
 
-        // ------------------ Campos específicos del JSON Solidaria ------------------
-
-        [BsonElement("ProcessLine")]
-        public CodeValue? ProcessLine { get; set; }
-
-        [BsonElement("SubProcessLine")]
-        public CodeValue? SubProcessLine { get; set; }
+        // IpsNit se agregó en $addFields
+        [BsonElement("IpsNit")]
+        public string IpsNit { get; set; } = string.Empty;
 
         [BsonElement("ProtectionType")]
-        public CodeValue? ProtectionType { get; set; }
+        public string ProtectionType { get; set; } = string.Empty;
 
-        [BsonElement("Transaction")]
-        public string Transaction { get; set; } = string.Empty;
+        [BsonElement("HabilitationCode")]
+        public string HabilitationCode { get; set; } = string.Empty;
 
-        [BsonElement("InsuranceRadNumber")]
-        public string InsuranceRadNumber { get; set; } = string.Empty;
+        [BsonElement("NameIps")]
+        public string NameIps { get; set; } = string.Empty;
 
-        [BsonElement("InsuranceFillingDate")]
-        public DateTime? InsuranceFillingDate { get; set; }
 
-        [BsonElement("FillingDate")]
-        public DateTime? FillingDate { get; set; }
+        // InvoiceDate se agregó en $addFields (a partir de InvoiceEmissionDate)
+        [BsonElement("InvoiceDate")]
+        public DateTime? InvoiceDate { get; set; }
 
-        [BsonElement("LastRadNumber")]
-        public string LastRadNumber { get; set; } = string.Empty;
+        // ClaimDate se agregó en $addFields (a partir de PaymentDetails.ClaimFormalizationDate)
+        [BsonElement("ClaimDate")]
+        public DateTime? ClaimDate { get; set; }
 
-        [BsonElement("LastFilingDate")]
-        public DateTime? LastFilingDate { get; set; }
+        // La clave principal para la deserialización
+        [BsonElement("Sections")]
+        public AggregationSections Sections { get; set; } = new();
 
-        [BsonElement("ResponseRGO")]
-        public CodeValue? ResponseRGO { get; set; }
+        // Campos que el $project conservó del documento original
+        // Asumo que WorkflowData y Alerts son nodos complejos no modificados
 
-        [BsonElement("Cufe")]
-        public string Cufe { get; set; } = string.Empty;
-
-        [BsonElement("InvoiceValue")]
-        public long? InvoiceValue { get; set; }
-
-        [BsonElement("InvoiceEmissionDate")]
-        public DateTime? InvoiceEmissionDate { get; set; }
-
-        [BsonElement("InvoiceReceptionDate")]
-        public DateTime? InvoiceReceptionDate { get; set; }
-
-        [BsonElement("BusinessInvoiceStatus")]
-        public string BusinessInvoiceStatus { get; set; } = string.Empty;
-
-        [BsonElement("Provider")]
-        public ProviderNode? Provider { get; set; }
-
-        [BsonElement("Claim")]
-        public ClaimNode? Claim { get; set; }
-
+        // Si tus nodos Alerts y WorkflowData tienen una estructura compleja, 
+        // podrías usar Dictionary<string, object> si no quieres tiparlos completamente.
         [BsonElement("Alerts")]
+        //public List<Dictionary<string, object>>? Alerts { get; set; }
+
         public List<AlertNode>? AlertsNode { get; set; }
 
         [BsonElement("WorkflowData")]
-        public WorkflowDataNode? WorkflowData { get; set; }
+        public Dictionary<string, object>? WorkflowData { get; set; }
 
-        [BsonElement("AuditProcessFlags")]
-        public AuditProcessFlagsNode? AuditProcessFlags { get; set; }
+        // =========================================================================
+        // PROPIEDADES IGNORADAS
+        // Propiedades del documento original que ya NO están en la salida del $project
+        // =========================================================================
 
-        // ------------------ ENRIQUECIMIENTOS (NO PERSISTEN) ------------------
-        [BsonIgnore] public string ParametrizedHelpType { get; set; } = string.Empty;
-        [BsonIgnore] public string InvoicePhoneVerificationValue { get; set; } = string.Empty;
-        [BsonIgnore] public ElectronicBillingEntity? ElectronicBilling { get; set; }
-        [BsonIgnore] public SinisterAggregation? ValidationSinister { get; set; }
-        [BsonIgnore] public InvoiceDifferentRadicates? InvoiceDifferentRadicates { get; set; }
-        [BsonIgnore] public InvoiceDifferentRadicates? PreviousObjections { get; set; }
-        [BsonIgnore] public InvoiceDifferentRadicates? MultipleTransports { get; set; }
-        [BsonIgnore] public ResearchRequest? ResearchRequest { get; set; }
-        [BsonIgnore] public ResearchEntity[]? ResearchData { get; set; }
-        [BsonIgnore] public ClaimsQueueEntity? ClaimsQueue { get; set; }
-        [BsonIgnore] public IEnumerable<ConsolidatedTransactionContracts>? ConsolidatedTransactionContracts { get; set; }
-        [BsonIgnore] public IEnumerable<LegalProceedingsEntity>? LegalProceedings { get; set; }
-        [BsonIgnore] public IEnumerable<DisputeProcessEntity>? LegalProcessesAndTransactionContractsParameters { get; set; }
-        [BsonIgnore] public ValidationAggregationRules_31_40? ResultAggregationRules { get; set; }
-        [BsonIgnore] public ProviderData? ProviderData { get; set; }
+        // Propiedades que probablemente NO estén en la salida del $project, por lo tanto, se ignoran.
+        [BsonIgnore] public long? OriginalInvoiceValue { get; set; }
+        [BsonIgnore] public string BusinessInvoiceStatus { get; set; } = string.Empty;
+        [BsonIgnore] public object? Provider { get; set; }
+        [BsonIgnore] public object? Claim { get; set; }
+
         [BsonIgnore] public List<string>? NotNullErrorsInModel { get; set; } = new();
+
         [BsonIgnore] public List<string>? TypeErrorsInModel { get; set; } = new();
 
-        // Si algunas reglas externas esperan HelpType (como en InvoiceData), puedes derivarlo:
-        [BsonIgnore] public string HelpType => ProtectionType?.Value ?? string.Empty;
+        [BsonIgnore] public ValidationAggregationRules_31_40? ResultAggregationRules { get; set; }
+
+        // Mantenemos tus propiedades de enriquecimiento marcadas con BsonIgnore
+        [BsonIgnore] public string ParametrizedHelpType { get; set; } = string.Empty;
+        [BsonIgnore] public string HelpType => string.Empty;
+        // ... (El resto de tus propiedades BsonIgnore deben ir aquí)
     }
 
     // ================== NODOS GENERALES ==================
@@ -1231,33 +1492,31 @@ namespace RulesEngine.Domain.Invoices.Entities
     }
 
     // ================== EXTENSIONES ==================
-    public static class SolidariaInvoiceDataExtensions
-    {
-        public static string GetAccidentNumber(this SolidariaInvoiceData d)
-            => d.Claim?.Number
-               ?? d.Claim?.Vehicle?.Soat?.SIRASFilingNumber
-               ?? string.Empty;
+    //public static class SolidariaInvoiceDataExtensions
+    //{
+    //    public static string GetAccidentNumber(this SolidariaInvoiceData d)
+    //        => d.Sections.InvolvedVehicleInformation.LicensePlate
+    //           ?? string.Empty;
 
-        public static string GetPrimaryAmbulancePlate(this SolidariaInvoiceData d)
-            => d.Claim?.Victims?.Find(v => v.RemissionInfo?.Transport?.PrimaryTransferAmbulancePlate != null)
-                   ?.RemissionInfo?.Transport?.PrimaryTransferAmbulancePlate
-               ?? string.Empty;
+    //    public static string GetPrimaryAmbulancePlate(this SolidariaInvoiceData d)
+    //        => d.Claim?.Victims?.Find(v => v.RemissionInfo?.Transport?.PrimaryTransferAmbulancePlate != null)
+    //               ?.RemissionInfo?.Transport?.PrimaryTransferAmbulancePlate
+    //           ?? string.Empty;
 
-        public static string? GetVehiclePlate(this SolidariaInvoiceData d)
-            => d.Claim?.Vehicle?.PlateNumber;
+    //    public static string? GetVehiclePlate(this SolidariaInvoiceData d)
+    //        => d.Sections.InvolvedVehicleInformation.LicensePlate;
+    //    public static string? GetSoatPolicyNumber(this SolidariaInvoiceData d)
+    //        => d.Sections.InvolvedVehicleInformation.SoatNumber;
 
-        public static string? GetSoatPolicyNumber(this SolidariaInvoiceData d)
-            => d.Claim?.Vehicle?.Soat?.Policy?.Number;
+    //    public static string? GetFirstVictimId(this SolidariaInvoiceData d)
+    //        => d.Claim?.Victims != null && d.Claim.Victims.Count > 0
+    //           ? d.Claim.Victims[0].IdNumber
+    //           : null;
 
-        public static string? GetFirstVictimId(this SolidariaInvoiceData d)
-            => d.Claim?.Victims != null && d.Claim.Victims.Count > 0
-               ? d.Claim.Victims[0].IdNumber
-               : null;
+    //    public static DateTime? GetEventDate(this SolidariaInvoiceData d)
+    //        => d.Sections.EventInformation.EventDate; 
 
-        public static DateTime? GetEventDate(this SolidariaInvoiceData d)
-            => d.Claim?.Event?.Date;
-
-        public static string? ToUTCString(this DateTime? dt, string format)
-            => dt.HasValue ? dt.Value.ToUniversalTime().ToString(format) : null;
-    }
+    //    public static string? ToUTCString(this DateTime? dt, string format)
+    //        => dt.HasValue ? dt.Value.ToUniversalTime().ToString(format) : null;
+    //}
 }

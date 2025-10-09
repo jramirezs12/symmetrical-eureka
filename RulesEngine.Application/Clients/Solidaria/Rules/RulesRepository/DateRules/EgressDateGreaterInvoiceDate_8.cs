@@ -1,12 +1,15 @@
 ﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 using RulesEngine.Domain.ValueObjects;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRules
 {
-    public class EgressDateGreaterInvoiceDate_8 : Rule
+    public class EgressDateGreaterInvoiceDate_8 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
+
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
@@ -16,7 +19,8 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRu
                                                    Date.GreaterThan(x.EgressDate, x.InvoiceDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
         }
 
         private static Alert CreateAlert()

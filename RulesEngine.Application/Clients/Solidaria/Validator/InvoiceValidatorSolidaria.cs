@@ -22,55 +22,55 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
             CascadeMode = CascadeMode.Stop;
 
             // 1. CLAIM
-            RuleFor(x => x.Claim)
+            RuleFor(x => x.Sections)
                 .NotNull().WithMessage(InvoiceDataErrors.ClaimConsecutiveEmpty.Description)
                 .DependentRules(() =>
                 {
-                    RuleFor(x => x.Claim!)
+                    RuleFor(x => x.Sections!)
                         .SetValidator(new ClaimNodeValidator(_constantsRepository));
 
                     // 2. EVENT (solo si existe)
-                    RuleFor(x => x.Claim!.Event)
+                    RuleFor(x => x.Sections!.EventInformation)
                         .NotNull().WithMessage(InvoiceDataErrors.NatureOfEventEmpty.Description)
                         .DependentRules(() =>
                         {
-                            RuleFor(x => x.Claim!.Event!)
+                            RuleFor(x =>x.Sections!.EventInformation)
                                 .SetValidator(new EventNodeValidator(_constantsRepository, _validateHour));
                         });
 
                     // 3. VEHICLE
-                    RuleFor(x => x.Claim!.Vehicle)
+                    RuleFor(x =>x.Sections!.InvolvedVehicleInformation)
                         .NotNull().WithMessage(InvoiceDataErrors.VehicleTypeEmpty.Description)
                         .DependentRules(() =>
                         {
-                            RuleFor(x => x.Claim!.Vehicle!)
+                            RuleFor(x =>x.Sections!.InvolvedVehicleInformation!)
                                 .SetValidator(new VehicleNodeValidator(_constantsRepository));
                         });
 
                     // 4. VICTIMS LIST
-                    RuleFor(x => x.Claim!.Victims)
+                    RuleFor(x =>x.Sections!.VictimData)
                         .NotNull().WithMessage("Debe existir al menos una víctima")
-                        .Must(v => v != null && v.Count > 0)
+                        .Must(v => v != null )
                         .WithMessage("Debe existir al menos una víctima")
                         .DependentRules(() =>
                         {
                             // Primera víctima (si quieres todas: RuleForEach)
-                            RuleFor(x => x.Claim!.Victims![0])
+                            RuleFor(x =>x.Sections!)
                                 .SetValidator(new VictimNodeValidator(_constantsRepository))
-                                .When(x => x.Claim!.Victims != null && x.Claim.Victims.Count > 0);
+                                .When(x =>x.Sections!.VictimData  != null  );
                         });
                 });
         }
 
         // =================== VALIDADORES HIJOS ===================
 
-        private class ClaimNodeValidator : AbstractValidator<ClaimNode>
+        private class ClaimNodeValidator : AbstractValidator<AggregationSections>
         {
             public ClaimNodeValidator(IConstantsRepository repo)
             {
                 CascadeMode = CascadeMode.Stop;
 
-                RuleFor(c => c.Consecutive)
+                RuleFor(c => c.ClaimData.Consecutive)
                     .NotNull().WithMessage(InvoiceDataErrors.ClaimConsecutiveEmpty.Description)
                     .GreaterThanOrEqualTo(0).WithMessage(InvoiceDataErrors.ClaimConsecutiveEmpty.Description)
                     .Must(v => v != null && v.ToString()!.Length <= 12)
@@ -80,7 +80,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
             }
         }
 
-        private class EventNodeValidator : AbstractValidator<EventNode>
+        private class EventNodeValidator : AbstractValidator<EventInformationSection>
         {
             private readonly IConstantsRepository _repo;
             public EventNodeValidator(IConstantsRepository repo, Regex hourRegex)
@@ -90,33 +90,32 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
 
                 RuleFor(e => e.Nature)
                     .NotNull().WithMessage(InvoiceDataErrors.NatureOfEventEmpty.Description)
-                    .Must(n => n != null && n.Code != null && n.Code.Length <= 2)
+                    .Must(n => n != null && n != null && n.Length <= 2)
                     .WithErrorCode("CustomMustValidator")
                     .MustAsync(async (n, _) =>
                     {
                         if (n == null) return false;
                         var list = await Get(ConstantsCodes.NatureOfEvent);
-                        return list.ListType!.Any(c => c.Code == n.Code);
+                        return list.ListType!.Any(c => c.Code == n);
                     }).WithMessage(InvoiceDataErrors.NatureOfEventType.Description);
 
                 RuleFor(e => e.Cause)
                     .NotNull().WithMessage(InvoiceDataErrors.EventDescriptionEmpty.Description)
-                    .Must(c => c != null && c.Value.Length <= 45)
+                    .Must(c => c != null && c.Length <= 45)
                     .WithErrorCode("CustomMustValidator");
 
-                RuleFor(e => e.Address)
+                RuleFor(e => e.Adress)
                     .NotEmpty().WithMessage(InvoiceDataErrors.EventAddressEmpty.Description)
                     .Must(a => a != null && a.Length <= 100)
                     .WithErrorCode("CustomMustValidator");
 
                 RuleFor(e => e.Date)
                     .NotNull().WithMessage(InvoiceDataErrors.EventDateEmpty.Description)
-                    .Must(ValidDate)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(e =>
                     {
-                        if (e.Date == null) return InvoiceDataErrors.EventDateEmpty.Description;
-                        var formatted = e.Date.Value.ToString("dd/MM/yyyy");
+                        if (e == null) return InvoiceDataErrors.EventDateEmpty.Description;
+                        var formatted = e.Date.ToString("dd/MM/yyyy");
                         var parsed = Date.Create(formatted);
                         if (Date.IsNullable(parsed)) return InvoiceDataErrors.EventDateEmpty.Description;
                         if (Date.IsFailedConversion(parsed)) return InvoiceDataErrors.EventDateFormat.Description;
@@ -132,25 +131,25 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
 
                 RuleFor(e => e.Department)
                     .NotNull().WithMessage(InvoiceDataErrors.EventDepartmentCodeEmpty.Description)
-                    .Must(d => d != null && d.Value.Length <= 45)
+                    .Must(d => d != null && d.Length <= 45)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(InvoiceDataErrors.EventDepartmentCodeLength.Description);
 
                 RuleFor(e => e.Municipality)
                     .NotNull().WithMessage(InvoiceDataErrors.EventMunicipalityCodeEmpty.Description)
-                    .Must(m => m != null && m.Value.Length <= 42)
+                    .Must(m => m != null && m.Length <= 42)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(InvoiceDataErrors.EventMunicipalityCodeLength.Description);
 
                 RuleFor(e => e.Zone)
                     .NotNull().WithMessage(InvoiceDataErrors.EventZoneOcurrenceEmpty.Description)
-                    .Must(z => z != null && z.Code != null && z.Code.Length == 1)
+                    .Must(z => z != null && z != null && z.Length == 1)
                     .WithErrorCode("CustomMustValidator")
                     .MustAsync(async (z, _) =>
                     {
                         if (z == null) return false;
                         var list = await Get(ConstantsCodes.EventZone);
-                        return list.ListType!.Any(c => c.Description == z.Value || c.Code == z.Code);
+                        return list.ListType!.Any(c => c.Description == z || c.Code == z);
                     }).WithMessage(InvoiceDataErrors.EventZoneOcurrenceType.Description);
 
                 RuleFor(e => e.Description)
@@ -171,7 +170,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
             }
         }
 
-        private class VehicleNodeValidator : AbstractValidator<VehicleNode>
+        private class VehicleNodeValidator : AbstractValidator<InvolvedVehicleInformationSection>
         {
             private readonly IConstantsRepository _repo;
             public VehicleNodeValidator(IConstantsRepository repo)
@@ -181,13 +180,13 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
 
                 RuleFor(v => v.InsuranceStatus)
                     .NotNull().WithMessage(InvoiceDataErrors.AssuranceStateEmpty.Description)
-                    .Must(s => s != null && s.Code != null && s.Code.Length == 1)
+                    .Must(s => s != null && s != null && s.Length == 1)
                     .WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.AssuranceStateLength.Description)
                     .MustAsync(async (s, _) =>
                     {
                         if (s == null) return false;
                         var list = await Get(ConstantsCodes.AssuranceState);
-                        return list.ListType!.Any(c => c.Code == s.Code);
+                        return list.ListType!.Any(c => c.Code == s);
                     }).WithMessage(InvoiceDataErrors.AssuranceStateType.Description);
 
                 RuleFor(v => v.Brand)
@@ -196,37 +195,37 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
 
                 RuleFor(v => v.Type)
                     .NotNull().WithMessage(InvoiceDataErrors.VehicleTypeEmpty.Description)
-                    .Must(t => t != null && t.Code != null && t.Code.Length <= 1)
+                    .Must(t => t != null && t != null && t.Length <= 1)
                     .WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.VehicleTypeLength.Description)
                     .MustAsync(async (t, _) =>
                     {
                         if (t == null) return false;
                         var list = await Get(ConstantsCodes.VehicleType);
-                        return list.ListType!.Any(c => c.Code == t.Code);
+                        return list.ListType!.Any(c => c.Code == t);
                     }).WithMessage(InvoiceDataErrors.VehicleType.Description);
 
-                RuleFor(v => v.PlateNumber)
+                RuleFor(v => v.LicensePlate)
                     .NotEmpty().WithMessage(InvoiceDataErrors.LicensePlateEmpty.Description)
                     .MaximumLength(10).WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.LicensePlateLength.Description);
 
-                RuleFor(v => v.Soat!.Policy!.Number)
+                RuleFor(v => v.SoatNumber)
                     .NotEmpty().WithMessage(InvoiceDataErrors.SoatNumberEmpty.Description)
-                    .When(v => v.Soat?.Policy != null)
+                    .When(v => v.SoatNumber != null)
                     .MaximumLength(10).WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.SoatNumberLength.Description);
 
-                RuleFor(v => v.Soat!.InsuranceCompany!.Code)
+                RuleFor(v => v.InsuranceCompany)
                     .NotEmpty().WithMessage(InvoiceDataErrors.InsuranceCompanyCodeEmpty.Description)
-                    .When(v => v.Soat?.InsuranceCompany != null)
+                    .When(v => v.InsuranceCompany != null)
                     .MaximumLength(8).WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.InsuranceCompanyCodeLength.Description);
 
-                // Policy Validity Start
-                RuleFor(v => v.Soat!.Policy)
+                //// Policy Validity Start
+                RuleFor(v => v.ValidityStartDate)
                     .Must(StartValid)
-                    .When(v => v.Soat?.Policy?.ValidityStartDate != null)
+                    .When(v => v.ValidityStartDate != null)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(v =>
                     {
-                        var dt = v.Soat?.Policy?.ValidityStartDate;
+                        var dt = v.ValidityStartDate;
                         if (dt == null) return InvoiceDataErrors.PolicyValidityStartDateEmpty.Description;
                         var formatted = dt.Value.ToString("dd/MM/yyyy");
                         var parsed = Date.Create(formatted);
@@ -235,14 +234,14 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
                         return InvoiceDataErrors.PolicyValidityStartDateFormat.Description;
                     });
 
-                // Policy Validity End
-                RuleFor(v => v.Soat!.Policy)
+                //// Policy Validity End
+                RuleFor(v => v.ValidityEndDate)
                     .Must(EndValid)
-                    .When(v => v.Soat?.Policy?.ValidityEndDate != null)
+                    .When(v =>v.ValidityEndDate != null)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(v =>
                     {
-                        var dt = v.Soat?.Policy?.ValidityEndDate;
+                        var dt = v.ValidityEndDate;
                         if (dt == null) return InvoiceDataErrors.PolicyValidityEndDateEmpty.Description;
                         var formatted = dt.Value.ToString("dd/MM/yyyy");
                         var parsed = Date.Create(formatted);
@@ -251,9 +250,9 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
                         return InvoiceDataErrors.PolicyValidityEndDateFormat.Description;
                     });
 
-                bool StartValid(PolicyNode? p)
+                bool StartValid(DateTime? p)
                 {
-                    var d = p?.ValidityStartDate;
+                    var d = p;
                     if (d == null) return true;
                     var formatted = d.Value.ToString("dd/MM/yyyy");
                     var parsed = Date.Create(formatted);
@@ -263,9 +262,9 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
                     return formatted.Length == 10;
                 }
 
-                bool EndValid(PolicyNode? p)
+                bool EndValid(DateTime? p)
                 {
-                    var d = p?.ValidityEndDate;
+                    var d = p;
                     if (d == null) return true;
                     var formatted = d.Value.ToString("dd/MM/yyyy");
                     var parsed = Date.Create(formatted);
@@ -279,7 +278,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
             }
         }
 
-        private class VictimNodeValidator : AbstractValidator<VictimNode>
+        private class VictimNodeValidator : AbstractValidator<AggregationSections>
         {
             private readonly IConstantsRepository _repo;
             public VictimNodeValidator(IConstantsRepository repo)
@@ -287,105 +286,105 @@ namespace RulesEngine.Application.Clients.Solidaria.Validator
                 _repo = repo;
                 CascadeMode = CascadeMode.Stop;
 
-                RuleFor(v => v.FirstLastName)
+                RuleFor(v => v.VictimData.FirstLastName)
                     .NotEmpty().WithMessage(InvoiceDataErrors.VictimLastNameEmpty.Description)
                     .Must(s => s != null && s.Length <= 40)
                     .WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.VictimLastNameEmpty.Description);
 
-                RuleFor(v => v.FirstName)
+                RuleFor(v => v.VictimData.FirstName)
                     .NotEmpty().WithMessage(InvoiceDataErrors.VictimFirstNameEmpty.Description)
                     .Must(s => s != null && s.Length <= 20)
                     .WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.VictimFirstNameEmpty.Description);
 
-                RuleFor(v => v.IdType)
+                RuleFor(v => v.VictimData.IdTypeCode)
                     .NotNull().WithMessage(InvoiceDataErrors.VictimDocumentTypeEmpty.Description)
-                    .Must(t => t != null && t.Code != null && t.Code.Length <= 2)
+                    .Must(t => t != null && t != null && t.Length <= 2)
                     .WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.VictimDocumentTypeLength.Description)
                     .MustAsync(async (t, _) =>
                     {
                         if (t == null) return false;
                         var list = await Get(ConstantsCodes.DocumentType);
-                        return list.ListType!.Any(c => c.Description == t.Value || c.Code == t.Code);
+                        return list.ListType!.Any(c => c.Code == t);
                     })
                     .WithMessage(InvoiceDataErrors.DocumentTypeFormat.Description);
 
-                RuleFor(v => v.IdNumber)
+                RuleFor(v => v.VictimData.IdNumber)
                     .NotEmpty().WithMessage(InvoiceDataErrors.VictimIdEmpty.Description)
                     .Must(s => s != null && s.Length <= 16)
                     .WithErrorCode("CustomMustValidator").WithMessage(InvoiceDataErrors.VictimIdLength.Description);
 
-                RuleFor(v => v.Condition)
+                RuleFor(v => v.VictimData.Condition)
                     .NotNull().WithMessage(InvoiceDataErrors.VictimTypeConditionEmpty.Description)
-                    .Must(c => c != null && c.Code != null && c.Code.Length == 1)
+                    .Must(c => c != null && c != null && c.Length == 1)
                     .WithErrorCode("CustomMustValidator")
                     .MustAsync(async (c, _) =>
                     {
                         if (c == null) return false;
                         var list = await Get(ConstantsCodes.Condition);
-                        return list.ListType!.Any(x => x.Description == c.Value || x.Code == c.Code);
+                        return list.ListType!.Any(x => x.Code == c);
                     }).WithMessage(InvoiceDataErrors.VictimTypeCondition.Description);
 
                 // Protections (billed / claimed) — ejemplo: MedicalSurgicalExpenses
-                RuleFor(v => v.ProtectionsClaimed!.MedicalSurgicalExpenses!.TotalBilled)
+                RuleFor(v => v.VictimData.MedicalSurgicalExpenses)
                     .NotNull().WithMessage(InvoiceDataErrors.TotalBilledMedicalAndSurgicalExpensesEmpty.Description)
-                    .When(v => v.ProtectionsClaimed?.MedicalSurgicalExpenses != null)
+                    .When(v =>v.VictimData.MedicalSurgicalExpenses  != 0)
                     .Must(val => val != null && val >= 0)
                     .WithErrorCode("CustomMustValidator")
-                    .Must(val => val != null && val.Value.ToString().Length <= 15)
+                    .Must(val => val != null && val.ToString().Length <= 15)
                     .WithMessage(InvoiceDataErrors.TotalBilledMedicalAndSurgicalExpensesLength.Description);
 
-                RuleFor(v => v.ProtectionsClaimed!.MedicalSurgicalExpenses!.TotalClaimed)
+                RuleFor(v => v.VictimData.TotalClaimed)
                     .NotNull().WithMessage(InvoiceDataErrors.TotalClaimedMedicalAndSurgicalExpensesEmpty.Description)
-                    .When(v => v.ProtectionsClaimed?.MedicalSurgicalExpenses != null)
+                    .When(v => v.VictimData.TotalClaimed != null)
                     .Must(val => val != null && val >= 0)
                     .WithErrorCode("CustomMustValidator")
-                    .Must(val => val != null && val.Value.ToString().Length <= 15)
+                    .Must(val => val != null && val.ToString().Length <= 15)
                     .WithMessage(InvoiceDataErrors.TotalClaimedMedicalAndSurgicalExpensesLength.Description);
 
-                // Transporte
-                RuleFor(v => v.ProtectionsClaimed!.VictimTransportAndMobilizationExpenses!.TotalBilled)
+                //// Transporte
+                RuleFor(v =>v.VictimData.VictimTransportAndMobilizationExpenses)
                     .NotNull().WithMessage(InvoiceDataErrors.ToTalBilledTransportAndMobilizationExpensesEmpty.Description)
-                    .When(v => v.ProtectionsClaimed?.VictimTransportAndMobilizationExpenses != null)
+                    .When(v => v.VictimData.VictimTransportAndMobilizationExpenses != null)
                     .Must(val => val != null && val >= 0)
                     .WithErrorCode("CustomMustValidator")
-                    .Must(val => val != null && val.Value.ToString().Length <= 15)
+                    .Must(val => val != null && val.ToString().Length <= 15)
                     .WithMessage(InvoiceDataErrors.TotalBilledTransportAndMobilizationExpensesLength.Description);
 
-                RuleFor(v => v.ProtectionsClaimed!.VictimTransportAndMobilizationExpenses!.TotalClaimed)
+                RuleFor(v => v.VictimData.TotalClaimed)
                     .NotNull().WithMessage(InvoiceDataErrors.ToTalClaimedTransportAndMobilizationExpensesEmpty.Description)
-                    .When(v => v.ProtectionsClaimed?.VictimTransportAndMobilizationExpenses != null)
+                    .When(v => v?.VictimData.VictimTransportAndMobilizationExpenses != null)
                     .Must(val => val != null && val >= 0)
                     .WithErrorCode("CustomMustValidator")
-                    .Must(val => val != null && val.Value.ToString().Length <= 15)
+                    .Must(val => val != null && val.ToString().Length <= 15)
                     .WithMessage(InvoiceDataErrors.ToTalClaimedTransportAndMobilizationExpensesLength.Description);
 
                 // MedicalAttention: fechas y diagnóstico egreso
-                RuleFor(v => v.MedicalAttention)
-                    .Must(m => ValidDate(m?.IncomeDate))
-                    .When(v => v.MedicalAttention?.IncomeDate != null)
+                RuleFor(v => v.MedicalCertification.IncomeDate)
+                    .Must(m => ValidDate(m.Value))
+                    .When(v => v.MedicalCertification?.IncomeDate != null)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(v =>
                     {
-                        var d = v.MedicalAttention?.IncomeDate;
+                        var d = v.MedicalCertification?.IncomeDate;
                         if (d == null) return InvoiceDataErrors.MedicalCertificationIncomeDateEmpty.Description;
                         return InvoiceDataErrors.MedicalCertificationIncomeDateFormat.Description;
                     });
 
-                RuleFor(v => v.MedicalAttention)
+                RuleFor(v => v.MedicalCertification)
                     .Must(m => ValidDate(m?.EgressDate))
-                    .When(v => v.MedicalAttention?.EgressDate != null)
+                    .When(v => v.MedicalCertification?.EgressDate != null)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(v =>
                     {
-                        var d = v.MedicalAttention?.EgressDate;
+                        var d = v.MedicalCertification?.EgressDate;
                         if (d == null) return InvoiceDataErrors.MedicalCertificationEgressDateEmpty.Description;
                         return InvoiceDataErrors.MedicalCertificationEgressDateFormat.Description;
                     });
 
-                RuleFor(v => v.MedicalAttention!.EgressMainDiagnosis)
+                RuleFor(v => v.MedicalCertification!.EgressMainDiagnosis)
                     .NotNull().WithMessage(InvoiceDataErrors.MedicalCertificationDiagonsisEgressEmpty.Description)
-                    .When(v => v.MedicalAttention != null)
-                    .Must(code => code != null && code.Code != null && code.Code.Length <= 4)
+                    .When(v => v.MedicalCertification != null)
+                    .Must(code => code != null && code != null && code.Length <= 4)
                     .WithErrorCode("CustomMustValidator")
                     .WithMessage(InvoiceDataErrors.MedicalCertificationDiagonsisEgressLength.Description);
 

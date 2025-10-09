@@ -1,4 +1,5 @@
 ﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Mundial.Entities;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
@@ -6,8 +7,9 @@ using RulesEngine.Domain.ValueObjects;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Atypicality
 {
-    public class ClaimPendingAtypicalityStageIIRule8 : Rule
+    public class ClaimPendingAtypicalityStageIIRule8 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
         public override void Define()
         {
             InvoiceToCheckSolidaria invoiceToCheck = default!;
@@ -17,7 +19,8 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Atypic
                                                     && Date.IsNullable(x.InvestigationResponseDate));
 
             Then()
-                .Do(w => invoiceToCheck.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
         }
 
         private Alert CreateAlert()

@@ -14,10 +14,6 @@ using RulesEngine.Domain.Parameters.Repositories;
 using RulesEngine.Domain.Primitives;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 using RulesEngine.Infrastructure.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RulesEngine.Infrastructure.Builders
 {

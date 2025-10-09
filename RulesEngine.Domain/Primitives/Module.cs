@@ -1,5 +1,8 @@
-﻿namespace RulesEngine.Domain.Primitives
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace RulesEngine.Domain.Primitives
 {
+    [BsonIgnoreExtraElements]
     public class Module
     {
         public int _Id { get; private set; } = 0;

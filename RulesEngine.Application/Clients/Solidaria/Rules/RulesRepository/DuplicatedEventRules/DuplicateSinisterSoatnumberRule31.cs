@@ -1,11 +1,14 @@
 ﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DuplicatedEventRules
 {
-    public class DuplicateSinisterSoatnumberRule31 : Rule
+    public class DuplicateSinisterSoatnumberRule31 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
+
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
@@ -17,7 +20,8 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Duplic
                                          c.IdentificationNumber != x.VictimId));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
         }
 
         private static Alert CreateAlert()

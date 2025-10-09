@@ -3,10 +3,10 @@
 namespace RulesEngine.Application.Mundial.Invoices.Helper
 {
     // Solo métodos adicionales específicos de la capa aplicación
-    internal static class SolidariaInvoiceDataLogicExtensions
-    {
-        // Ejemplo adicional (no duplicado):
-        public static bool HasVictims(this SolidariaInvoiceData d)
-            => d.Claim?.Victims != null && d.Claim.Victims.Count > 0;
-    }
+    //internal static class SolidariaInvoiceDataLogicExtensions
+    //{
+    //    // Ejemplo adicional (no duplicado):
+    //    public static bool HasVictims(this SolidariaInvoiceData d)
+    //        => d.Claim?.Victims != null && d.Claim.Victims.Count > 0;
+    //}
 }

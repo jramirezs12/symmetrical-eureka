@@ -1,11 +1,13 @@
 ﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.InvestigationRules
 {
-    public class SameNumberAccidentDifferentClaimsStageIIRule13 : Rule
+    public class SameNumberAccidentDifferentClaimsStageIIRule13 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
@@ -13,7 +15,8 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
             When()
                 .Match(() => invoiceToCheck, x => x.Research != null && x.Research.Length > 0 && x.Research.Any(x => x.ResponseDate == null && string.IsNullOrEmpty(x.UserResponse)));
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
         }
         private static Alert CreateAlert()
         {

@@ -3,11 +3,13 @@ using RulesEngine.Domain.RulesEntities.Mundial.Entities;
 using RulesEngine.Domain.ValueObjects;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
+using RulesEngine.Application.Actions;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.CoincidenceRules
 {
-    public class InvoiceValueRule_26 : Rule
+    public class InvoiceValueRule_26 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
@@ -17,7 +19,8 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Coinci
                                                     && x.InvoiceValue.Value != x.BilledMedicalExpenses.Value + x.BilledTransportation.Value);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
         }
 
         private static Alert CreateAlert()

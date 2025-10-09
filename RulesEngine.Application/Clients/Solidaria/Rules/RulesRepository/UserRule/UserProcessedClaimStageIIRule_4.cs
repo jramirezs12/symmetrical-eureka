@@ -1,11 +1,14 @@
 ﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.UserRule
 {
-    public class UserProcessedClaimStageIIRule_4 : Rule
+    public class UserProcessedClaimStageIIRule_4 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
+
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
@@ -13,7 +16,8 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.UserRu
             When()
                 .Match(() => invoiceToCheck, x => x!.AllowedUsers!.Any(c=>c.UserAccount == x.UserClaim));
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(ctx => OnMatch());
         }
         private static Alert CreateAlert()
         {

@@ -1,19 +1,14 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using RulesEngine.Application.Abstractions.Services;
 using RulesEngine.Domain.InputSourcesEntities;
 using RulesEngine.Domain.Invoices.Entities;
 using RulesEngine.Domain.Invoices.Repositories;
+using RulesEngine.Domain.Provider.Entities;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 using RulesEngine.Domain.ValueObjects;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using static RulesEngine.Domain.RulesEntities.Solidaria.Entities.InvoiceToCheckSolidaria;
 using Date = RulesEngine.Domain.ValueObjects.Date;
 
 namespace RulesEngine.Application.InputSources
@@ -51,18 +46,28 @@ namespace RulesEngine.Application.InputSources
         public async Task<InvoiceToCheckSolidaria> Create()
         {
             // Asignaciones básicas desde el nuevo modelo
-            _entity.IpsNit = _data.Provider?.IdNumber ?? string.Empty;
-            _entity.LicensePlate = _data.Claim?.Vehicle?.PlateNumber ?? string.Empty;
-            _entity.SoatNumber = _data.Claim?.Vehicle?.Soat?.Policy?.Number
-                                 ?? _data.Claim?.Vehicle?.Soat?.SIRASFilingNumber
-                                 ?? string.Empty;
-            _entity.VictimId = _data.Claim?.Victims?.FirstOrDefault()?.IdNumber ?? string.Empty;
-            _entity.InvoiceNumber = _data.InvoiceNumber;
-            _entity.LicensePlateAmbulance = _data.Claim?.Victims?
-                                                  .FirstOrDefault()?
-                                                  .RemissionInfo?
-                                                  .Transport?
-                                                  .PrimaryTransferAmbulancePlate ?? string.Empty;
+            //_entity.IpsNit = _data.Provider?.IdNumber ?? string.Empty;
+            
+            //_entity.LicensePlate = _data.Claim?.Vehicle?.PlateNumber ?? string.Empty;
+            //_entity.SoatNumber = _data.Claim?.Vehicle?.Soat?.Policy?.Number
+            //                     ?? _data.Claim?.Vehicle?.Soat?.SIRASFilingNumber
+            //                     ?? string.Empty;
+            //_entity.VictimId = _data.Claim?.Victims?.FirstOrDefault()?.IdNumber ?? string.Empty;
+            //_entity.InvoiceNumber = _data.InvoiceNumber;
+            //_entity.LicensePlateAmbulance = _data.Claim?.Victims?
+            //                                      .FirstOrDefault()?
+            //                                      .RemissionInfo?
+            //                                      .Transport?
+            //                                      .PrimaryTransferAmbulancePlate ?? string.Empty;
+
+            _entity.IpsNit = _data.IpsNit ?? string.Empty;
+            _entity.LicensePlate = _data.Sections.InvolvedVehicleInformation.LicensePlate ?? string.Empty;
+            _entity.SoatNumber = _data.Sections.InvolvedVehicleInformation.SoatNumber ?? string.Empty;
+            _entity.VictimId = _data.Sections.VictimData.IdentificationNumber ?? string.Empty;
+            _entity.InvoiceNumber = _data.Sections.ClaimData.RadNumber ?? string.Empty;
+            //_entity.InvoiceNumber = _data.InvoiceNumber ?? string.Empty;
+            _entity.LicensePlateAmbulance = _data.Sections.RemissionInfo.PrimaryTransferAmbulancePlate ?? string.Empty;
+
 
             var loadedData = new ConcurrentDictionary<string, object>();
             var tasks = new List<Task>();
@@ -243,7 +248,7 @@ namespace RulesEngine.Application.InputSources
                     VehicleType = veh?.GetValue("Type", null) is BsonDocument vehType
                         ? vehType.GetValue("Code", "").AsString
                         : string.Empty,
-                    HabilitationCodeProvider = _data.Provider?.HabilitationCode ?? string.Empty,
+                    HabilitationCodeProvider = _data.HabilitationCode ?? string.Empty,
                     LicencePlateAmbulance = transport?.GetValue("PrimaryTransferAmbulancePlate", "").AsString
                 });
             }
@@ -252,51 +257,53 @@ namespace RulesEngine.Application.InputSources
         private static InvoiceToCheckSolidaria FillInformation(SolidariaInvoiceData data, InvoiceToCheckSolidaria target)
         {
             // Campos equivalentes adaptados
-            target.IpsNit = data.Provider?.IdNumber ?? string.Empty;
+            target.IpsNit = data.IpsNit;
             target.ModuleName = data.BusinessInvoiceStatus ?? string.Empty;
-            target.IpsNitRips = data.Provider?.IdNumber ?? string.Empty;
+
+            target.IpsNitRips = data.IpsNit ?? string.Empty;
 
             // Vehículo / SOAT
-            target.SoatNumber = data.Claim?.Vehicle?.Soat?.Policy?.Number
-                                ?? data.Claim?.Vehicle?.Soat?.SIRASFilingNumber
-                                ?? string.Empty;
-            target.LicensePlate = data.Claim?.Vehicle?.PlateNumber ?? string.Empty;
+            target.SoatNumber = data.Sections.InvolvedVehicleInformation.SoatNumber ?? string.Empty;
+
+            target.LicensePlate = data.Sections.InvolvedVehicleInformation.LicensePlate ?? string.Empty;
 
             // Víctima principal
-            var victim = data.Claim?.Victims?.FirstOrDefault();
-            target.VictimId = victim?.IdNumber ?? string.Empty;
-            target.DocumentType = victim?.IdType?.Code ?? string.Empty;
+            var victim = data.Sections;
+            target.VictimId = victim.VictimData.IdentificationNumber ?? string.Empty;
+            target.DocumentType = victim.VictimData.DocumentType ?? string.Empty;
 
             // Números de factura (Solidaria no tiene FURIPS1/FURIPS2, se mapean a invoice principal)
-            target.InvoiceNumberF1 = data.InvoiceNumber;
-            target.InvoiceNumberF2 = data.InvoiceNumber;
-            target.InvoiceNumberFurips = data.InvoiceNumber;
+            target.InvoiceNumberF1 = data.Sections.ClaimData.InvoiceNumber;
+            target.InvoiceNumberF2 = data.Sections.ClaimData.InvoiceNumber;
+            target.InvoiceNumberFurips = data.Sections.ClaimData.InvoiceNumber;
 
             // Fechas (convertimos usando Date helper)
-            target.EventDate = Date.ConvertToUtcFormattedDate(data.Claim?.Event?.Date?.ToString());
-            target.DeathDate = Date.ConvertToUtcFormattedDate(victim?.DeathInfo?.DeathDate?.ToString());
+            target.EventDate = Date.ConvertToUtcFormattedDate(data.Sections.EventInformation.EventDate);
+            target.DeathDate = Date.ConvertToUtcFormattedDate(data.Sections.VictimData.DeathDate);
             // ClaimDate: en FURIPS era Notificationdate; aquí podría mapearse a FilingDate
-            target.ClaimDate = Date.ConvertToUtcFormattedDate(data.FillingDate?.ToString());
-            target.InvoiceDate = Date.ConvertToUtcFormattedDate(data.InvoiceEmissionDate?.ToString());
-            target.IncomeDate = Date.ConvertToUtcFormattedDate(victim?.MedicalAttention?.IncomeDate?.ToString());
-            target.EgressDate = Date.ConvertToUtcFormattedDate(victim?.MedicalAttention?.EgressDate?.ToString());
+            target.ClaimDate = Date.ConvertToUtcFormattedDate(data.Sections.ClaimData.FillingDate);
+            target.InvoiceDate = Date.ConvertToUtcFormattedDate(data.InvoiceDate);
+            target.IncomeDate = Date.ConvertToUtcFormattedDate(victim.MedicalCertification.IncomeDate);
+            target.EgressDate = Date.ConvertToUtcFormattedDate(victim.MedicalCertification.EgressDate);
             target.InvoiceMAOSDate = Date.Create(null); // Solidaria: no análogo directo a MosData.ProviderInvoiceDate en ejemplo
 
             // Valores económicos (si aplican en Solidaria)
-            var protections = victim?.ProtectionsClaimed;
-            target.InvoiceValue = Currency.Create(data.InvoiceValue?.ToString() ?? "0");
-            target.BilledMedicalExpenses = Currency.Create(protections?.MedicalSurgicalExpenses?.TotalBilled?.ToString() ?? "0");
-            target.BilledTransportation = Currency.Create(protections?.VictimTransportAndMobilizationExpenses?.TotalBilled?.ToString() ?? "0");
+            //var protections = victim.VictimData.ProtectionsClaimed;
+            target.InvoiceValue = Currency.Create(data.Sections.ClaimData.InvoiceValue.ToString() ?? "0");
+            target.BilledMedicalExpenses = Currency.Create(victim.VictimData.MedicalSurgicalExpenses.ToString() ?? "0");
+            target.BilledTransportation = Currency.Create(victim.VictimData.VictimTransportAndMobilizationExpenses.ToString() ?? "0");
 
             // Electronic Billing (si se cargó)
-            target.IpsNitFE = data.ElectronicBilling?.NitIps ?? string.Empty;
-            target.InvoiceNumberFE = data.ElectronicBilling?.InvoiceNumber ?? string.Empty;
+            //target.IpsNitFE = data.ElectronicBilling?.NitIps ?? string.Empty;
+            //target.InvoiceNumberFE = data.ElectronicBilling?.InvoiceNumber ?? string.Empty;
 
             // Aggregations
-            target.InvoiceDifferentRadicates = data.InvoiceDifferentRadicates;
-            target.LicensePlateAmbulance = victim?.RemissionInfo?.Transport?.PrimaryTransferAmbulancePlate ?? string.Empty;
-            target.ProviderData = data.ProviderData;
-            target.AlertsEncountered = data.AlertsNode?.Select(a => new RulesEngine.Domain.Common.AlertSolidaria
+            //target.InvoiceDifferentRadicates = data.InvoiceDifferentRadicates;
+            target.LicensePlateAmbulance = victim.RemissionInfo.PrimaryTransferAmbulancePlate ?? string.Empty;
+
+
+            target.ProviderData = new ProviderData() { HabilitationCode=data.HabilitationCode, NameIps=data.NameIps,NitIps=data.IpsNit ?? string.Empty };
+            target.AlertsEncountered =data.AlertsNode?.Select(a => new RulesEngine.Domain.Common.AlertSolidaria
             {
                 NameAction = a.NameAction,
                 Type = a.Type,
@@ -305,46 +312,46 @@ namespace RulesEngine.Application.InputSources
                 Description = a.Description
             }).ToArray();
 
-            target.Research = data.ResearchData;
-            target.InvestigationResponseDate = data.ResearchData != null && data.ResearchData.Any()
-                ? Date.ConvertToUtcFormattedDate(
-                    data.ResearchData
-                        .Where(r => r.OriginModule == data.BusinessInvoiceStatus)
-                        .Max(r => r.ResponseDate)
-                        ?.ToString())
-                : Date.Create(null);
+            //target.Research = data.ResearchData;
+            //target.InvestigationResponseDate = data.ResearchData != null && data.ResearchData.Any()
+            //    ? Date.ConvertToUtcFormattedDate(
+            //        data.ResearchData
+            //            .Where(r => r.OriginModule == data.BusinessInvoiceStatus)
+            //            .Max(r => r.ResponseDate)
+            //            ?.ToString())
+            //    : Date.Create(null);
 
             // Totales de glosas – en Solidaria están en Claim.TotalGlossValues (adaptar si se requiere)
-            var totalApproved = data.Claim?.TotalGlossValues?.TotalInvoiceApprovedValue ?? 0;
-            var totalGlossed = data.Claim?.TotalGlossValues?.TotalInvoiceObjectedValue ?? 0;
+            var totalApproved = data.Sections.TotalGlossValues.TotalInvoiceApprovedValue ?? 0;
+            var totalGlossed = data.Sections.TotalGlossValues.TotalInvoiceObjectedValue ?? 0; 
             target.TotalAuthorizedValue = Currency.Create(totalApproved.ToString());
             target.TotalGlossedValue = Currency.Create(totalGlossed.ToString());
 
-            target.ProcessAndContracts = data.LegalProcessesAndTransactionContractsParameters?
-                .Where(x => x.InvoiceNumber == data.InvoiceNumber && x.ClaimantId == data.Provider?.IdNumber)
-                .ToList();
+            //target.ProcessAndContracts = data.LegalProcessesAndTransactionContractsParameters?
+            //    .Where(x => x.InvoiceNumber == data.InvoiceNumber && x.ClaimantId == data.Provider?.IdNumber)
+            //    .ToList();
 
-            target.SinisterAggretation = data.ValidationSinister;
-            target.PreviousObjections = data.PreviousObjections;
-            target.MultipleTransposrts = data.MultipleTransports;
-            target.ResearchRequest = data.ResearchRequest;
-            target.ListServiceCodes = victim?.Services?
-                .Where(s => s.ServiceInfo != null)
-                .Select(s => s.ServiceInfo!.Code)
-                .Distinct()
-                .ToList() ?? new List<string>();
+            //target.SinisterAggretation = data.ValidationSinister;
+            //target.PreviousObjections = data.PreviousObjections;
+            //target.MultipleTransposrts = data.MultipleTransports;
+            //target.ResearchRequest = data.ResearchRequest;
+            //target.ListServiceCodes = victim?.Services?
+            //    .Where(s => s.ServiceInfo != null)
+            //    .Select(s => s.ServiceInfo!.Code)
+            //    .Distinct()
+            //    .ToList() ?? new List<string>();
 
             target.NotNullErrorsInModel = data.NotNullErrorsInModel ?? new List<string>();
             target.TypeErrorsInModel = data.TypeErrorsInModel ?? new List<string>();
             target.ValidationAggregationRules_31_40 = data.ResultAggregationRules;
 
-            target.InvoicePhoneVerificationValue = Currency.Create(data.InvoicePhoneVerificationValue ?? "0");
-            target.UserClaim = data.ClaimsQueue?.UserAccount;
-            target.HelpType = data.ProtectionType?.Value ?? string.Empty;
+            //target.InvoicePhoneVerificationValue = Currency.Create(data.InvoicePhoneVerificationValue ?? "0");
+            //target.UserClaim = data.ClaimsQueue?.UserAccount;
+            target.HelpType = data.ProtectionType ?? string.Empty;
             target.HelpTypeToValidate = data.ParametrizedHelpType;
             target.PrimaryTransportationDate = Date.Create(null);
 
-            target.VehicleType = data.Claim?.Vehicle?.Type?.Value;
+            target.VehicleType = data.Sections.InvolvedVehicleInformation.TypeValue;
 
             return target;
         }

@@ -1,11 +1,13 @@
 ﻿using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.CompletenessRules
 {
-    public class RequiredFieldsRule41 : Rule
+    public class RequiredFieldsRule41 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
@@ -14,7 +16,9 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Comple
                 .Match(() => invoiceToCheck!, x => x.NotNullErrorsInModel != null && x.NotNullErrorsInModel.Count() > 0);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)))
+                .Do(ctx => OnMatch());
+
         }
 
         private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)

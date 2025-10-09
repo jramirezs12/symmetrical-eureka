@@ -1,13 +1,16 @@
 ﻿using MongoDB.Driver;
 using NRules.Fluent.Dsl;
+using RulesEngine.Application.Actions;
 using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 using RulesEngine.Domain.ValueObjects;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRules
 {
-    public class DeathDateYearAgoRule_50 : Rule
+    public class DeathDateYearAgoRule_50 : Rule, ITrackableRule
     {
+        public Action OnMatch { get; set; } = () => { };
+
         public override void Define()
         {
             InvoiceToCheckSolidaria? invoiceToCheck = default;
