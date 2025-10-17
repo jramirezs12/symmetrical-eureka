@@ -16,22 +16,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Coinci
                 .Match(() => invoiceToCheck!, x => x.InvoiceNumberF1 != x.InvoiceNumberF2);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de coincidencia",
-                AlertDescription = "El número de factura de la tabla origen es difernte al número de factura de la tabla consulta",
-                AlertMessage = "El número de factura registrado en el FURIPS I es diferente al número de factura registrado en el FURIPS II"
+                NameAction = "Alerta",
+                Type = "Regla de coincidencia",
+                Module = "Reclamaciones",
+                Description = "El número de factura de la tabla origen es diferente al número de factura de la tabla consulta",
+                Message = "El número de factura registrado en el FURIPS I es diferente al número de factura registrado en el FURIPS II",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

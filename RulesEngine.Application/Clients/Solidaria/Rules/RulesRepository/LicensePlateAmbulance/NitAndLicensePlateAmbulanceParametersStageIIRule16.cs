@@ -14,21 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Licens
                 .Match(() => invoiceToCheck, x => x.AmbulanceControl!.Any(c => c.LicensePlate == x.LicensePlateAmbulance && x.IpsNit == c.NitIps));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por placa de ambulancia",
-                AlertDescription = "Valida por nit y placa de ambulancia si existe coincidencia dentro del archivo matriz",
-                AlertMessage = "Reclamación con habilitación de placa ambulancia"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por placa de ambulancia",
+                Module = "Reclamaciones",
+                Description = "Valida por NIT y placa de ambulancia si existe coincidencia en el archivo matriz",
+                Message = "Reclamación con habilitación de placa ambulancia",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

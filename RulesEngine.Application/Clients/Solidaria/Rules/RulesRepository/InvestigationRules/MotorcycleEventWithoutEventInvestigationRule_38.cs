@@ -25,21 +25,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                                         && Date.IsNullable(x.InvestigationResponseDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToInvestigation",
-                AlertNameAction = "Enviar a investigar",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El tipo de vehículo es 10, y si la placa en la tabla de origen es igual a la placa en la tabla de consulta, debe construir la llave \"Siniestro\" en la tabla de origen y contar la cantidad de siniestros diferentes en la tabla consulta , si la cantidad de siniestros es mayor a x y no tiene resultado de investigación asociado al siniestro",
-                AlertMessage = "Se debe enviar a investigar, evento múltiple",
+                NameAction = "Enviar a investigar",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El tipo de vehículo es 10, y si la placa en la tabla de origen es igual a la placa en la tabla de consulta, debe construir la llave \"Siniestro\" en la tabla de origen y contar la cantidad de siniestros diferentes en la tabla consulta , si la cantidad de siniestros es mayor a x y no tiene resultado de investigación asociado al siniestro",
+                Message = "Se debe enviar a investigar, evento múltiple",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

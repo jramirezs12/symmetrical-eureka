@@ -1,6 +1,5 @@
 using NRules.Fluent.Dsl;
 using RulesEngine.Domain.Common;
-using RulesEngine.Domain.RulesEntities.Mundial.Entities;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.TotalPayment
@@ -19,21 +18,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.TotalP
                 .Match(() => invoiceToCheck, x => x.InvoiceValue.Value > 0 && x.TotalAuthorizedValue.Value > 0 && Equals(x.InvoiceValue, x.TotalAuthorizedValue));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private Alert CreateAlert()
+        private AlertSolidaria CreateAlert()
         {
-            Alert alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla de asignación a calidad - por pago total",
-                AlertDescription = "Valida si el total de la factura es igual al total autorizado",
-                AlertMessage = "Asignación a calidad por Pago Total"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla de asignación a calidad - por pago total",
+                Module = "Reclamaciones",
+                Description = "Valida si el total de la factura es igual al total autorizado",
+                Message = "Asignación a calidad por Pago Total",
+                Typification = string.Empty,
+                HasPriority = false
             };
-            return alert;
         }
     }
 }

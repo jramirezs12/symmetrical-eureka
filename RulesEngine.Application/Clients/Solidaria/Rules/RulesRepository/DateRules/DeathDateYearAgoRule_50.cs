@@ -19,23 +19,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRu
                 .Match(() => invoiceToCheck!, x => !Date.IsNullable(x.DeathDate, x.EventDate) && x.DeathDate.Value > x.EventDate.Value!.Value.AddYears(1));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "DenyClaim",
-                AlertNameAction = "Devolver Reclamación",
-                AlertType = "Regla lógica de fechas",
-                AlertDescription = "Permite validar si la fecha en caso de muerte ocurrió un año después de la fecha evento/accidente, lo que conlleva a la objeción de la reclamación",
-                AlertMessage = "Se debe aplicar devolución  teniendo en cuenta que la reclamación " +
-                                                            "no puede ser presentada con anterioridad a la fecha de ocurrencia del evento. " +
-                                                            "Carta de devolución # xxx"
+                NameAction = "Devolver Reclamación",
+                Type = "Regla lógica de fechas",
+                Module = "Reclamaciones",
+                Description = "Valida si la fecha de muerte ocurrió un año después de la fecha del evento/accidente, lo que conlleva a la objeción",
+                Message = "Se debe aplicar devolución, teniendo en cuenta que la reclamación no puede ser presentada con anterioridad a la fecha de ocurrencia del evento. Carta de devolución # xxx",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

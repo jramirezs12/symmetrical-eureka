@@ -16,21 +16,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                     && x.FraudulentIps.Result == "Envio a investigar");
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El NIT de la IPS en la tabla de origen es igual al NIT de la IPS en la tabla de consulta y registra como acción \"Enviar a Investigar\"",
-                AlertMessage = "IPS se encuentra en la matriz de IPS con alto indice de fraude con instrucción de Enviar a investigar"
+                NameAction = "Alerta",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El NIT de la IPS en la tabla de origen es igual al NIT de la IPS en la tabla de consulta y registra como acción \"Enviar a Investigar\"",
+                Message = "IPS se encuentra en la matriz de IPS con alto indice de fraude con instrucción de Enviar a investigar",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

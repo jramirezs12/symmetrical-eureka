@@ -11,24 +11,24 @@ namespace RulesEngine.Application.Solidaria.Rules.RulesRepository.Transaction_co
             InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
-                .Match(() => invoiceToCheck, x => (x.ProcessAndContracts != null) && 
-                    (x.TotalAuthorizedValue.Value > 0 && x.ProcessAndContracts.Any(c => c.ClaimantId == x.IpsNit && c.InvoiceNumber == x.InvoiceNumber 
+                .Match(() => invoiceToCheck, x => (x.ProcessAndContracts != null) &&
+                    (x.TotalAuthorizedValue.Value > 0 && x.ProcessAndContracts.Any(c => c.ClaimantId == x.IpsNit && c.InvoiceNumber == x.InvoiceNumber
                     && c.Active == true && c.Type == "Contratos de transacción")));
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por Id Reclamante",
-                AlertDescription = "Valida que la reclamación este en la tabla parametrica",
-                AlertMessage = "La reclamación está registrada como contrato de transacción"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por Id Reclamante",
+                Module = "Reclamaciones",
+                Description = "Valida que la reclamación este en la tabla parametrica",
+                Message = "La reclamación está registrada como contrato de transacción",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

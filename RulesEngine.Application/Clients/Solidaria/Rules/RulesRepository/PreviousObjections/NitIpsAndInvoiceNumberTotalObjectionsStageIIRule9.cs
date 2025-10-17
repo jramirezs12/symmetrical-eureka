@@ -16,22 +16,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Previo
                 .Match(() => invoiceToCheck, x => x.PreviousObjections != null && x.PreviousObjections.RadNumbers!.Length > 0);
 
             Then()
-                .Do(w => invoiceToCheck.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private Alert CreateAlert()
+        private AlertSolidaria CreateAlert()
         {
-            Alert alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Objeciones Previas",
-                AlertDescription = "Valida si la factura tiene obejeciones previas totales (Validacion entre invoiceTotal y GlossValue)",
-                AlertMessage = "Asignación a calidad por Objeciones previas."
+                NameAction = "Enviar a Calidad",
+                Type = "Objeciones Previas",
+                Module = "Reclamaciones",
+                Description = "Valida si la factura tiene objeciones previas totales (Validación entre invoiceTotal y GlossValue)",
+                Message = "Asignación a calidad por Objeciones previas.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

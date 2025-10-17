@@ -15,21 +15,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.RipsRu
                                                     || x.InvoiceNumberRips != x.InvoiceNumberF1);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de RIPS",
-                AlertDescription = "El NIT más número de factura de la tabla origen no coincide con el registrado en la tabla de consulta",
-                AlertMessage = "Mostrar mensaje indicando que no fue aportado RIPS"
+                NameAction = "Alerta",
+                Type = "Regla de RIPS",
+                Module = "Reclamaciones",
+                Description = "El NIT más número de factura de la tabla origen no coincide con el registrado en la tabla de consulta",
+                Message = "Mostrar mensaje indicando que no fue aportado RIPS",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

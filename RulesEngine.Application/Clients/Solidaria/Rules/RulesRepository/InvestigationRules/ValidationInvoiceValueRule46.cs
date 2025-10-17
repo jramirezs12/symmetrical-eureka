@@ -4,7 +4,7 @@ using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.InvestigationRules
 {
-    public class ValidationInvoiceValueRule46: Rule
+    public class ValidationInvoiceValueRule46 : Rule
     {
         public override void Define()
         {
@@ -14,22 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                 && x.IpsPhoneVerification.Any(c => x.IpsNit == c.NitIps
                                 && x.InvoiceValue.Value > x.InvoicePhoneVerificationValue.Value));
             Then()
-                .Do(ctx => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(ctx => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToInvestigation",
-                AlertNameAction = "Enviar a Investigar",
-                AlertType = "Regla de investigación",
-                AlertDescription = "EL nit que se está validando es igual al nit de la tabla de consulta y el valor de la factura es mayor al valor permitido",
-                AlertMessage = "Se debe enviar a verificación telefonica"
+                NameAction = "Enviar a Investigar",
+                Type = "Regla de investigación",
+                Module = "Reclamaciones",
+                Description = "El NIT coincide y el valor de la factura es mayor al valor permitido",
+                Message = "Se debe enviar a verificación telefónica",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

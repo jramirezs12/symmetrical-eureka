@@ -14,21 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                 .Match(() => invoiceToCheck!, x => x.IpsInvestigation != null && x.IpsInvestigation.IpsNit == x.IpsNit);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El NIT de la IPS en la tabla de origen es igual al NIT de la IPS en la tabla de consulta",
-                AlertMessage = "IPS se encuentra en la matriz de IPS en esquema de investigación"
+                NameAction = "Alerta",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El NIT de la IPS en la tabla de origen es igual al NIT de la IPS en la tabla de consulta",
+                Message = "IPS se encuentra en la matriz de IPS en esquema de investigación",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

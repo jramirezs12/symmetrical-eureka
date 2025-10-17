@@ -13,26 +13,26 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Judici
             InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
-                .Match(() => invoiceToCheck, x => x.ProcessAndContracts != null && 
-                    x.TotalAuthorizedValue.Value > 0 && x.ProcessAndContracts.Any(c => c.ClaimantId == x.IpsNit && c.InvoiceNumber == x.InvoiceNumber 
-                    && c.Active == true && c.Type == "Procesos judiciales"));;
+                .Match(() => invoiceToCheck, x => x.ProcessAndContracts != null &&
+                    x.TotalAuthorizedValue.Value > 0 && x.ProcessAndContracts.Any(c => c.ClaimantId == x.IpsNit && c.InvoiceNumber == x.InvoiceNumber
+                    && c.Active == true && c.Type == "Procesos judiciales")); ;
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por procesos judiaciales",
-                AlertDescription = "Valida que la reclamación este en la tabla parametrica",
-                AlertMessage = "La reclamación está registrada con un proceso judicial"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por procesos judiaciales",
+                Module = "Reclamaciones",
+                Description = "Valida que la reclamación esté en la tabla paramétrica",
+                Message = "La reclamación está registrada con un proceso judicial",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

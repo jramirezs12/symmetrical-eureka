@@ -14,26 +14,26 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Prescr
             InvoiceToCheckSolidaria invoiceToCheck = default!;
 
             When()
-                .Match(() => invoiceToCheck, x => !Date.IsNullable(x.EventDate) && !Date.IsNullable(x.EgressDate) 
+                .Match(() => invoiceToCheck, x => !Date.IsNullable(x.EventDate) && !Date.IsNullable(x.EgressDate)
                                                     && x.EventDate.Value!.Value.AddYears(2) > x.EgressDate.Value!.Value);
 
             Then()
-                .Do(w => invoiceToCheck.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private Alert CreateAlert()
+        private AlertSolidaria CreateAlert()
         {
-            Alert alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Reclamaciones Prescritas",
-                AlertDescription = "Valida si la fecha de egreso es mayor a dos años",
-                AlertMessage = "Asignación a calidad por Cuenta Prescrita."
+                NameAction = "Enviar a Calidad",
+                Type = "Reclamaciones Prescritas",
+                Module = "Reclamaciones",
+                Description = "Valida si la fecha de egreso es mayor a dos años",
+                Message = "Asignación a calidad por Cuenta Prescrita.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
 
     }

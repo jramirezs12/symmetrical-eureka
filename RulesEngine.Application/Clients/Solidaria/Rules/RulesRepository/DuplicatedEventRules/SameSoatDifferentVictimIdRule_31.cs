@@ -21,21 +21,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Duplic
                                                                             )));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla duplicidad de siniestro",
-                AlertDescription = "El número de póliza SOAT en la tabla origen es igual al número de de póliza SOAT en la tabla consulta y el siniestro en la tabla de origen es diferente en la tabla de consulta",
-                AlertMessage = "La póliza ya tiene siniestros creeados, verifique si corresponde a otro siniestro"
+                NameAction = "Alerta",
+                Type = "Regla duplicidad de siniestro",
+                Module = "Reclamaciones",
+                Description = "El número de póliza SOAT en la tabla origen es igual al número de de póliza SOAT en la tabla consulta y el siniestro en la tabla de origen es diferente en la tabla de consulta",
+                Message = "La póliza ya tiene siniestros creeados, verifique si corresponde a otro siniestro",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

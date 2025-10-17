@@ -161,7 +161,7 @@ namespace RulesEngine.Domain.RulesEntities.Solidaria.Entities
         public List<DisputeProcessEntity> ProcessAndContracts { get; set; } = new();
 
         /// <summary> Alertas base (SolidariaInvoiceData.Alerts) convertidas </summary>
-        public AlertSolidaria[] AlertsEncountered { get; set; } = [];
+        public List<AlertSolidaria> AlertSolidaria { get; set; } = [];
 
         /// <summary> Resultados de investigación (ResearchData) </summary>
         public ResearchEntity[] Research { get; set; } = [];

@@ -24,21 +24,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                                         > x.SamePlateForMotorcycleDifferentEventNumber);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El tipo de vehículo es 10, y si la placa en la tabla de origen es igual a la placa en la tabla de consulta, debe construir la llave \"Siniestro\" en la tabla de origen y contar la cantidad de siniestros diferentes en la tabla consulta , si la cantidad de Siniestros es mayor a x",
-                AlertMessage = "Evento múltiple"
+                NameAction = "Alerta",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El tipo de vehículo es 10, y si la placa en la tabla de origen es igual a la placa en la tabla de consulta, debe construir la llave \"Siniestro\" en la tabla de origen y contar la cantidad de siniestros diferentes en la tabla consulta , si la cantidad de Siniestros es mayor a x",
+                Message = "Evento múltiple",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

@@ -3,6 +3,7 @@ using RulesEngine.Domain.Common;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 using RulesEngine.Domain.ValueObjects;
 
+
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.PrescriptionRules
 {
     public class EgressAndClaimDateRule_23 : Rule
@@ -12,7 +13,7 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Prescr
             InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
-                .Match(() => invoiceToCheck!, x => Date.IsNotNullable(x.EgressDate, x.ClaimDate) && 
+                .Match(() => invoiceToCheck!, x => Date.IsNotNullable(x.EgressDate, x.ClaimDate) &&
                                                    x.EgressDate.Value!.Value.AddYears(2) <= x.ClaimDate.Value);
 
             Then()

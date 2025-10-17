@@ -19,21 +19,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                                         > Convert.ToInt32(x.SameVictimIdDifferentEventNumber));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El número de documento de identidad de la víctima en la tabla de origen es igual al número de documento de identidad de la víctima en la tabla de consulta, debe construir la llave \"siniestro\" en la tabla de origen y contar la cantidad de siniestros diferentes en la tabla consulta, si la cantidad de siniestros es mayor a x",
-                AlertMessage = "Evento múltiple"
+                NameAction = "Alerta",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El número de documento de identidad de la víctima en la tabla de origen es igual a la de la tabla de consulta; construir llave \"siniestro\" y contar siniestros distintos; si supera el parámetro",
+                Message = "Evento múltiple",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

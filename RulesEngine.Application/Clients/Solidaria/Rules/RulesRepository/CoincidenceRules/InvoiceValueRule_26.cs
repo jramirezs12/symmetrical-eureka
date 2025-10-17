@@ -19,22 +19,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Coinci
                                                     && x.InvoiceValue.Value != x.BilledMedicalExpenses.Value + x.BilledTransportation.Value);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de coincidencia",
-                AlertDescription = "El total facturado de la tabla origen es diferente al valor factura de la tabla consulta",
-                AlertMessage = "El valor total facturado descrito en el FURIPS I difiere del valor total facturado descrito en la factura de venta."
+                NameAction = "Alerta",
+                Type = "Regla de coincidencia",
+                Module = "Reclamaciones",
+                Description = "El total facturado de la tabla origen es diferente al valor factura de la tabla consulta",
+                Message = "El valor total facturado descrito en el FURIPS I difiere del valor total facturado descrito en la factura de venta.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

@@ -17,22 +17,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRu
                 .Match(() => invoiceToCheck!, x => Date.IsNotNullable(x.DeathDate, x.ClaimDate) && Date.GreaterThan(x.DeathDate, x.ClaimDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "DenyClaim",
-                AlertNameAction = "Devolver Reclamación",
-                AlertType = "Regla lógica de fechas",
-                AlertDescription = "Permite validar si la fecha en caso de muerte es posterior a la fecha de aviso de la reclamación, lo que conlleva a la devolución de la reclamación",
-                AlertMessage = "Se debe aplicar devolución teniendo en cuenta que la fecha de la muerte no puede ser mayor a la de fecha aviso de la reclamación. Carta de devolución # xxx"
+                NameAction = "Devolver Reclamación",
+                Type = "Regla lógica de fechas",
+                Module = "Reclamaciones",
+                Description = "Valida si la fecha en caso de muerte es posterior a la fecha de aviso de la reclamación, conlleva a la devolución",
+                Message = "Se debe aplicar devolución teniendo en cuenta que la fecha de la muerte no puede ser mayor a la fecha de aviso de la reclamación. Carta de devolución # xxx",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

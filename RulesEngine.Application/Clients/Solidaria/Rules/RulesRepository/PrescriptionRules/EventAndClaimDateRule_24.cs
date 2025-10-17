@@ -17,21 +17,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Prescr
                                                    Convert.ToDateTime(x.EventDate.Value).AddYears(5) < Convert.ToDateTime(x.ClaimDate.Value));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "PartialObjection",
-                AlertNameAction = "Aplicar objeción parcial",
-                AlertType = "Reglas de prescripción",
-                AlertDescription = "Si entre la fecha de ocurrencia del evento de la tabla origen y la fecha de aviso de la tabla consulta supera los cinco años",
-                AlertMessage = "Se debe aplicar la objeción total teniendo en cuenta que la reclamación se encuentra prescrita. Carta de objeción # xxx"
+                NameAction = "Aplicar objeción parcial",
+                Type = "Reglas de prescripción",
+                Module = "Reclamaciones",
+                Description = "Si entre la fecha de ocurrencia del evento y la fecha de aviso supera los cinco años",
+                Message = "Se debe aplicar la objeción total teniendo en cuenta que la reclamación se encuentra prescrita. Carta de objeción # xxx",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

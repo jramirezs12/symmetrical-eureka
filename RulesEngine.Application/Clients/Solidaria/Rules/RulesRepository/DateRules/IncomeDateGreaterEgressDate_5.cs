@@ -19,22 +19,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRu
                                                    Date.GreaterThan(x.IncomeDate, x.EgressDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "DenyClaim",
-                AlertNameAction = "Devolver Reclamación",
-                AlertType = "Regla lógica de fechas",
-                AlertDescription = "Permite validar si la fecha de ingreso es posterior a la fecha de egreso de la reclamación, lo que conlleva a la devolución de la reclamación",
-                AlertMessage = "Se debe aplicar devolución  teniendo en cuenta que el ingreso no puede ser posterior al egreso de la víctima a la institución. Carta de devolución # xxx"
+                NameAction = "Devolver Reclamación",
+                Type = "Regla lógica de fechas",
+                Module = "Reclamaciones",
+                Description = "Permite validar si la fecha de ingreso es posterior a la fecha de egreso de la reclamación, lo que conlleva a la devolución de la reclamación",
+                Message = "Se debe aplicar devolución  teniendo en cuenta que el ingreso no puede ser posterior al egreso de la víctima a la institución. Carta de devolución # xxx",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

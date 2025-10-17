@@ -1,6 +1,5 @@
 using NRules.Fluent.Dsl;
 using RulesEngine.Domain.Common;
-using RulesEngine.Domain.RulesEntities.Mundial.Entities;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.InvestigationNotCovered
@@ -16,26 +15,27 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
             InvoiceToCheckSolidaria invoiceToCheck = default!;
 
             When()
-                .Match(() => invoiceToCheck, x => x.Research != null && x.Research.Any(c => c.Response != null && c.Response.Answer != null && c.Response!.Answer!.State!.Name == "No Cubierto" || c.Response != null && c.Response.Answer != null && c.Response!.Answer!.State!.Name == "No cubierto"));
-
+                .Match(() => invoiceToCheck, x => x.Research != null && x.Research.Any(c =>
+                    c.Response != null && c.Response.Answer != null &&
+                    (c.Response!.Answer!.State!.Name == "No Cubierto" || c.Response!.Answer!.State!.Name == "No cubierto")));
 
             Then()
-                .Do(w => invoiceToCheck.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private Alert CreateAlert()
+        private AlertSolidaria CreateAlert()
         {
-            Alert alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "Valida si el resultado de la investigación es No cubierto",
-                AlertMessage = "La reclamación tiene resultados de investigación No Cubiertos"
+                NameAction = "Enviar a Calidad",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "Valida si el resultado de la investigación es No cubierto",
+                Message = "La reclamación tiene resultados de investigación No Cubiertos",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

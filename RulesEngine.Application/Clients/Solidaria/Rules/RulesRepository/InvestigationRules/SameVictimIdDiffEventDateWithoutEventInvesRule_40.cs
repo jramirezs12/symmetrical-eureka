@@ -20,21 +20,23 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                                         && Date.IsNullable(x.InvestigationResponseDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)));
         }
 
-        private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        private AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
-            var alert = new Alert
+            string typification = invoiceToCheck.TypificationMap.GetValueOrDefault(GetType().Name, "Sin typification");
+            bool haspriority = invoiceToCheck.HasPriorityMap.GetValueOrDefault(GetType().Name, false);
+            return new AlertSolidaria
             {
-                AlertAction = "SendToInvestigation",
-                AlertNameAction = "Enviar a investigación",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El número de documento de identidad de la víctima en la tabla de origen es igual al número de documento de identidad de la víctima en la tabla de consulta, debe construir la llave \"siniestro\" en la tabla de origen y contar la cantidad de siniestros diferentes en la tabla consulta , si la cantidad de siniestros es mayor a x y no tiene resultado de investigación asociado al siniestro",
-                AlertMessage = "Se debe enviar a investigar, evento múltiple",
+                NameAction = "Enviar a investigar",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El número de documento de identidad de la víctima coincide y hay múltiples siniestros; no hay resultado de investigación",
+                Message = "Se debe enviar a investigar, evento múltiple",
+                Typification = typification,
+                HasPriority = haspriority
             };
-
-            return alert;
         }
     }
 }

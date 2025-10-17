@@ -13,23 +13,23 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Furips
             When()
                 .Match(() => invoiceToCheck!, x => x.IpsNit != x.IpsNitFurips ||
                                                    x.InvoiceNumberFurips != x.InvoiceNumberF1);
-            
+
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de FURIPS I y II",
-                AlertDescription = "El NIT más número de factura de la tabla origen no coincide con el registrado en la tabla de consulta.",
-                AlertMessage = "No fue aportado FURIPS."
+                NameAction = "Alerta",
+                Type = "Regla de FURIPS I y II",
+                Module = "Reclamaciones",
+                Description = "El NIT más número de factura de la tabla origen no coincide con el registrado en la tabla de consulta.",
+                Message = "No fue aportado FURIPS.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

@@ -19,22 +19,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRu
                                                    Date.GreaterThan(x.EgressDate, x.InvoiceDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "DenyClaim",
-                AlertNameAction = "Devolver Reclamación",
-                AlertType = "Regla lógica de fechas",
-                AlertDescription = "Permite validar si la fecha de egreso es posterior a la fecha de factura, lo que conlleva la devolución de la reclamación.",
-                AlertMessage = "Se debe aplicar devolución, teniendo en cuenta que la fecha de egreso no puede ser posterior a la fecha de facturación de la atención."
+                NameAction = "Devolver Reclamación",
+                Type = "Regla lógica de fechas",
+                Module = "Reclamaciones",
+                Description = "Valida si la fecha de egreso es posterior a la fecha de factura; conlleva a devolución",
+                Message = "Se debe aplicar devolución, teniendo en cuenta que la fecha de egreso no puede ser posterior a la fecha de facturación de la atención.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

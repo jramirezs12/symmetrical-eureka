@@ -14,21 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invoic
                 .Match(() => invoiceToCheck!, x => !string.IsNullOrEmpty(x.InvoiceNumber) && x.InvoiceNumberFile.Any(n => x.InvoiceNumber == n.InvoiceNumber));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por número de factura",
-                AlertDescription = "Si el número de factura registrado en la reclamación corresponde al mismo número de factura activo en los parámetros, la cuenta se debe asignar a calidad.",
-                AlertMessage = "Asignación a calidad por Factura."
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por número de factura",
+                Module = "Reclamaciones",
+                Description = "Si el número de factura registrado en la reclamación coincide con uno activo en parámetros",
+                Message = "Asignación a calidad por Factura.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

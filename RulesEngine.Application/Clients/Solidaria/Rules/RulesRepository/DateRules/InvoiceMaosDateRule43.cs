@@ -18,22 +18,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRu
                 .Match(() => invoiceToCheck!, x => Date.IsNotNullable(x.InvoiceMAOSDate, x.ClaimDate) && x.InvoiceMAOSDate.Value > x.ClaimDate.Value);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "DenyClaim",
-                AlertNameAction = "Devolver Reclamación",
-                AlertType = "Regla lógica de fechas",
-                AlertDescription = "Se valida si la fecha de factura proveedor MAOS es una fecha posterior a la fecha de aviso de la reclamación",
-                AlertMessage = "La fecha de factura del proveedor MAOS no puede ser mayor a la fecha de aviso de la reclamación."
+                NameAction = "Devolver Reclamación",
+                Type = "Regla lógica de fechas",
+                Module = "Reclamaciones",
+                Description = "Se valida si la fecha de factura proveedor MAOS es una fecha posterior a la fecha de aviso de la reclamación",
+                Message = "La fecha de factura del proveedor MAOS no puede ser mayor a la fecha de aviso de la reclamación.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

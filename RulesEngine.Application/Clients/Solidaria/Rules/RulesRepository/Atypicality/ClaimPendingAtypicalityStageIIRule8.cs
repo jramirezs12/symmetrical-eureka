@@ -19,22 +19,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Atypic
                                                     && Date.IsNullable(x.InvestigationResponseDate));
 
             Then()
-                .Do(w => invoiceToCheck.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private Alert CreateAlert()
+        private AlertSolidaria CreateAlert()
         {
-            Alert alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla de Atipicidad",
-                AlertDescription = "Valia si la reclamación tiene alertas de tipo Atipicidad  y sin resultados de investigación",
-                AlertMessage = "Asignación a calidad por Atipicidades"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla de Atipicidad",
+                Module = "Reclamaciones",
+                Description = "Valida si la reclamación tiene alertas de tipo Atipicidad y sin resultados de investigación",
+                Message = "Asignación a calidad por Atipicidades",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

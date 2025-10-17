@@ -16,21 +16,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                     && x.FraudulentIps.Result == "Objetar todo");
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "ClaimObjection",
-                AlertNameAction = "Objetar la reclamación",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El NIT de la IPS en la tabla de origen es igua al NIT de la IPS en la tabla de consulta y registra como acción \"Objetar todo\"",
-                AlertMessage = "Se debe aplicar la objeción total teniendo en cuenta que la IPS no se encuentra prestando los servicios en la sede habilitada. Carta de objeció # xxx"
+                NameAction = "Objetar la reclamación",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El NIT de la IPS en la tabla de origen es igua al NIT de la IPS en la tabla de consulta y registra como acción \"Objetar todo\"",
+                Message = "Se debe aplicar la objeción total teniendo en cuenta que la IPS no se encuentra prestando los servicios en la sede habilitada. Carta de objeció # xxx",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

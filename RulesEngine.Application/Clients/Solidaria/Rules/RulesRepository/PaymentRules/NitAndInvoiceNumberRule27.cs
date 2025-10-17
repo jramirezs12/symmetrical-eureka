@@ -14,21 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Paymen
                  .Match(() => invoiceToCheck!, x => x.InvoiceDifferentRadicates != null && (x.InvoiceDifferentRadicates.TotalRadNumbers > 1 || x.InvoiceDifferentRadicates!.RadNumbers!.Any()));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)));
         }
 
-        private static Alert CreateAlert(InvoiceToCheckSolidaria invoice)
+        private static AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoice)
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de doble cobro",
-                AlertDescription = "El NIT y número de factura registrado de la tabla origen se encuentra en la tabla consulta bajo otro número de radicado",
-                AlertMessage = $"La reclamación ya se encuentra bajo el radicado {invoice.RadNumber}"
+                NameAction = "Alerta",
+                Type = "Regla de doble cobro",
+                Module = "Reclamaciones",
+                Description = "El NIT y número de factura registrados se encuentran en otro radicado",
+                Message = $"La reclamación ya se encuentra bajo el radicado {invoice.RadNumber}",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

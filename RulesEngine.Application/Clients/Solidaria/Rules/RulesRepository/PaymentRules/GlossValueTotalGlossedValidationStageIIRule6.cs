@@ -14,26 +14,26 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Paymen
             InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
-                .Match(() => invoiceToCheck, x => !Currency.IsNullable(x.InvoiceValue) && !Currency.IsNullable(x.TotalGlossedValue) && 
-                                                    Equals(x.InvoiceValue,x.TotalGlossedValue));
+                .Match(() => invoiceToCheck, x => !Currency.IsNullable(x.InvoiceValue) && !Currency.IsNullable(x.TotalGlossedValue) &&
+                                                    Equals(x.InvoiceValue, x.TotalGlossedValue));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private Alert CreateAlert()
+        private AlertSolidaria CreateAlert()
         {
-            Alert alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla de asignación a calidad - por glosa total",
-                AlertDescription = "Valida si el total de la factura es igual al total glosado",
-                AlertMessage = "Asignación a calidad por Glosa Total"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla de asignación a calidad - por glosa total",
+                Module = "Reclamaciones",
+                Description = "Valida si el total de la factura es igual al total glosado",
+                Message = "Asignación a calidad por Glosa Total",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

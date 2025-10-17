@@ -20,22 +20,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Duplic
                                   c.EventDate == x.EventDate.Value.Value.ToString("yyyy-MM-dd") && c.SoatNumber != x.SoatNumber));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de duplicidad de siniestro",
-                AlertDescription = "El número de identificación de la victima y la fecha de ocurrencia del evento es igual a la tabla consulta pero el número de póliza SOAT es diferente documento en la tabla de origen es diferente en la tabla de consulta",
-                AlertMessage = "El siniestro ya cuenta con un siniestro afectando otra póliza"
+                NameAction = "Alerta",
+                Type = "Regla de duplicidad de siniestro",
+                Module = "Reclamaciones",
+                Description = "El número de identificación de la victima y la fecha de ocurrencia del evento es igual a la tabla consulta pero el número de póliza SOAT es diferente documento en la tabla de origen es diferente en la tabla de consulta",
+                Message = "El siniestro ya cuenta con un siniestro afectando otra póliza",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

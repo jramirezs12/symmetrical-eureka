@@ -1,6 +1,5 @@
 using NRules.Fluent.Dsl;
 using RulesEngine.Domain.Common;
-using RulesEngine.Domain.RulesEntities.Mundial.Entities;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.LegalProcess
@@ -20,22 +19,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.LegalP
                     x.TotalAuthorizedValue.Value > 0 && x.ProcessAndContracts.Any(c => c.ClaimantId == x.IpsNit && c.InvoiceNumber == x.InvoiceNumber
                     && c.Active == true && c.Type == "Procesos judiciales")); ;
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por procesos judiaciales",
-                AlertDescription = "Valida que la reclamación este en la tabla parametrica",
-                AlertMessage = "La reclamación está registrada con un proceso judicial"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por procesos judiaciales",
+                Module = "Reclamaciones",
+                Description = "Valida que la reclamación este en la tabla parametrica",
+                Message = "La reclamación está registrada con un proceso judicial",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

@@ -14,21 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Servic
                 .Match(() => invoiceToCheck!, x => x.ListServiceCodes!.Any(code => x.ServiceCodeFiles!.Any(file => file.ServiceCode == code)));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por código de servicio",
-                AlertDescription = "El código de servicio no se encuentra activo en el parámetro de la etapa II.",
-                AlertMessage = "Asignación a calidad por Código del servicio."
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por código de servicio",
+                Module = "Reclamaciones",
+                Description = "El código de servicio no se encuentra activo en el parámetro de la etapa II.",
+                Message = "Asignación a calidad por Código del servicio.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

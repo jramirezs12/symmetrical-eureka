@@ -16,23 +16,27 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Comple
                 .Match(() => invoiceToCheck!, x => x.NotNullErrorsInModel != null && x.NotNullErrorsInModel.Count() > 0);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)))
                 .Do(ctx => OnMatch());
 
         }
 
-        private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        private AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
-            Alert alert = new Alert
+            var msg = invoiceToCheck.NotNullErrorsInModel!.Count > 1
+                ? $"Los campos {string.Join(", ", invoiceToCheck.NotNullErrorsInModel!)} son obligatorios y no vienen registrados."
+                : $"El campo {invoiceToCheck.NotNullErrorsInModel[0]} es obligatorio y no viene registrado.";
+
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de completitud",
-                AlertDescription = "valida existencia de  de campos vacios para FURIPS 1",
-                AlertMessage = invoiceToCheck.NotNullErrorsInModel!.Count > 1 ? $" Los campos {string.Join(", ", invoiceToCheck.NotNullErrorsInModel!)} son obligatorios y no vienen registrados."
-                : $"El campo {invoiceToCheck.NotNullErrorsInModel[0]} es obligatorio y no viene registrado."
+                NameAction = "Alerta",
+                Type = "Regla de completitud",
+                Module = "Reclamaciones",
+                Description = "Valida existencia de campos vacíos para FURIPS 1",
+                Message = msg,
+                Typification = string.Empty,
+                HasPriority = false
             };
-            return alert;
         }
     }
 }

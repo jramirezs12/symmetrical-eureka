@@ -15,21 +15,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                      .Count(c => c.LicensePlate == x.LicensePlate &&
                           c.EventDate != x.EventDate.Value.Value.ToString("yyyy-MM-dd")) >= x.ValidationAggregationRules_31_40.ParameterRule35And36);
             Then()
-                .Do(ctx => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+                .Do(ctx => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)));
         }
 
-        private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        private AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Enviar a Investigar",
-                AlertType = "Regla de investigación",
-                AlertDescription = "El número de placa del vehículo se encuentra en la tabla de consulta con más de un evento",
-                AlertMessage = $"Se debe enviar a investigar,evento multiple"
+                NameAction = "Enviar a Investigar",
+                Type = "Regla de investigación",
+                Module = "Reclamaciones",
+                Description = "El número de placa del vehículo se encuentra en la tabla de consulta con más de un evento",
+                Message = $"Se debe enviar a investigar,evento multiple",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

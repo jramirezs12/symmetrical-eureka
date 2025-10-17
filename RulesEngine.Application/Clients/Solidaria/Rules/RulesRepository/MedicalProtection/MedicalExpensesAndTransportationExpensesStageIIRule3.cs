@@ -15,21 +15,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Medica
             When()
                 .Match(() => invoiceToCheck, x => !string.IsNullOrEmpty(x.HelpType) && !string.IsNullOrEmpty(x.HelpTypeToValidate) && x.HelpType == x.HelpTypeToValidate);
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por Amparo",
-                AlertDescription = "Valida si el amparo de la reclamación es al menos uno de los parametros",
-                AlertMessage = "Asignación a calidad por Amparo"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por Amparo",
+                Module = "Reclamaciones",
+                Description = "Valida si el amparo de la reclamación es al menos uno de los parámetros",
+                Message = "Asignación a calidad por Amparo",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

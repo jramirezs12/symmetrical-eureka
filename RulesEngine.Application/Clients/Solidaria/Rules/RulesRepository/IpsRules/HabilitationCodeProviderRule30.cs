@@ -4,7 +4,7 @@ using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.IpsRules
 {
-    public class HabilitationCodeProviderRule30: Rule
+    public class HabilitationCodeProviderRule30 : Rule
     {
         public override void Define()
         {
@@ -14,20 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.IpsRul
                .Match(() => invoiceToCheck!, x => x.ProviderData == null || string.IsNullOrEmpty(x.ProviderData.HabilitationCode));
 
             Then()
-                .Do(ctx => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(ctx => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de IPS",
-                AlertDescription = "Si el código de habilitación del prestador del radicado que se está validando no existe en la tabla de consulta",
-                AlertMessage = $"IPS no se encuentra habilitada en el REPS"
+                NameAction = "Alerta",
+                Type = "Regla de IPS",
+                Module = "Reclamaciones",
+                Description = "El código de habilitación del prestador no existe en la consulta",
+                Message = "IPS no se encuentra habilitada en el REPS",
+                Typification = string.Empty,
+                HasPriority = false
             };
-            return alert;
         }
     }
 }

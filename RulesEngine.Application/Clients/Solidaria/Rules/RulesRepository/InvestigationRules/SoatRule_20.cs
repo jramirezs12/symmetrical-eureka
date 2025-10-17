@@ -15,21 +15,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                 .Match(() => invoiceToCheck!, x => x.AtypicalEvent != null && x.AtypicalEvent.Any(y => y.SoatNumber == x.SoatNumber));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)));
         }
 
-        private static Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        private static AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El número de póliza SOAT en la tabla de origen es igual a la placa en la tabla de consulta",
-                AlertMessage = $"El número de póliza SOAT presenta la siguiente alerta: {invoiceToCheck.AtypicalEvent!.First(x => x.SoatNumber == invoiceToCheck.SoatNumber).AlertDescription}"
+                NameAction = "Alerta",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El número de póliza SOAT coincide con la consulta",
+                Message = $"El número de póliza SOAT presenta la siguiente alerta: {invoiceToCheck.AtypicalEvent!.First(x => x.SoatNumber == invoiceToCheck.SoatNumber).AlertDescription}",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

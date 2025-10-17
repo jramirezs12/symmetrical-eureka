@@ -11,23 +11,24 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.IpsRul
             InvoiceToCheckSolidaria? invoiceToCheck = default;
 
             When()
-               .Match(() => invoiceToCheck!, x => x.AmbulanceControl != null && !string.IsNullOrEmpty(x.LicensePlateAmbulance) && !x.AmbulanceControl.Any(c=>c.LicensePlate == x.LicensePlateAmbulance));
-                                                  
+               .Match(() => invoiceToCheck!, x => x.AmbulanceControl != null && !string.IsNullOrEmpty(x.LicensePlateAmbulance) && !x.AmbulanceControl.Any(c => c.LicensePlate == x.LicensePlateAmbulance));
+
             Then()
-                .Do(ctx => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(ctx => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de IPS",
-                AlertDescription = "Si la placa de ambulancia del radicado que se está validando no existe en la tabla de consulta",
-                AlertMessage = "Movil no se se encuentra habilitada en el REPS"
+                NameAction = "Alerta",
+                Type = "Regla de IPS",
+                Module = "Reclamaciones",
+                Description = "La placa de ambulancia del radicado no existe en la matriz REPS",
+                Message = "Movil no se se encuentra habilitada en el REPS",
+                Typification = string.Empty,
+                HasPriority = false
             };
-            return alert;
         }
     }
 }

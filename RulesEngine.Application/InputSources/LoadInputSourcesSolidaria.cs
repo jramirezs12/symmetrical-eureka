@@ -264,7 +264,6 @@ namespace RulesEngine.Application.InputSources
 
             // Vehículo / SOAT
             target.SoatNumber = data.Sections.InvolvedVehicleInformation.SoatNumber ?? string.Empty;
-
             target.LicensePlate = data.Sections.InvolvedVehicleInformation.LicensePlate ?? string.Empty;
 
             // Víctima principal
@@ -272,81 +271,59 @@ namespace RulesEngine.Application.InputSources
             target.VictimId = victim.VictimData.IdentificationNumber ?? string.Empty;
             target.DocumentType = victim.VictimData.DocumentType ?? string.Empty;
 
-            // Números de factura (Solidaria no tiene FURIPS1/FURIPS2, se mapean a invoice principal)
+            // Números de factura
             target.InvoiceNumberF1 = data.Sections.ClaimData.InvoiceNumber;
             target.InvoiceNumberF2 = data.Sections.ClaimData.InvoiceNumber;
             target.InvoiceNumberFurips = data.Sections.ClaimData.InvoiceNumber;
 
-            // Fechas (convertimos usando Date helper)
+            // Fechas
             target.EventDate = Date.ConvertToUtcFormattedDate(data.Sections.EventInformation.EventDate);
             target.DeathDate = Date.ConvertToUtcFormattedDate(data.Sections.VictimData.DeathDate);
-            // ClaimDate: en FURIPS era Notificationdate; aquí podría mapearse a FilingDate
             target.ClaimDate = Date.ConvertToUtcFormattedDate(data.Sections.ClaimData.FillingDate);
             target.InvoiceDate = Date.ConvertToUtcFormattedDate(data.InvoiceDate);
             target.IncomeDate = Date.ConvertToUtcFormattedDate(victim.MedicalCertification.IncomeDate);
             target.EgressDate = Date.ConvertToUtcFormattedDate(victim.MedicalCertification.EgressDate);
-            target.InvoiceMAOSDate = Date.Create(null); // Solidaria: no análogo directo a MosData.ProviderInvoiceDate en ejemplo
+            target.InvoiceMAOSDate = Date.Create(null);
 
-            // Valores económicos (si aplican en Solidaria)
-            //var protections = victim.VictimData.ProtectionsClaimed;
+            // Valores económicos
             target.InvoiceValue = Currency.Create(data.Sections.ClaimData.InvoiceValue.ToString() ?? "0");
             target.BilledMedicalExpenses = Currency.Create(victim.VictimData.MedicalSurgicalExpenses.ToString() ?? "0");
             target.BilledTransportation = Currency.Create(victim.VictimData.VictimTransportAndMobilizationExpenses.ToString() ?? "0");
 
-            // Electronic Billing (si se cargó)
-            //target.IpsNitFE = data.ElectronicBilling?.NitIps ?? string.Empty;
-            //target.InvoiceNumberFE = data.ElectronicBilling?.InvoiceNumber ?? string.Empty;
-
             // Aggregations
-            //target.InvoiceDifferentRadicates = data.InvoiceDifferentRadicates;
             target.LicensePlateAmbulance = victim.RemissionInfo.PrimaryTransferAmbulancePlate ?? string.Empty;
 
-
-            target.ProviderData = new ProviderData() { HabilitationCode=data.HabilitationCode, NameIps=data.NameIps,NitIps=data.IpsNit ?? string.Empty };
-            target.AlertsEncountered =data.AlertsNode?.Select(a => new RulesEngine.Domain.Common.AlertSolidaria
+            target.ProviderData = new ProviderData()
             {
-                NameAction = a.NameAction,
-                Type = a.Type,
-                Module = a.Module,
-                Message = a.Message,
-                Description = a.Description
-            }).ToArray();
+                HabilitationCode = data.HabilitationCode,
+                NameIps = data.NameIps,
+                NitIps = data.IpsNit ?? string.Empty
+            };
 
-            //target.Research = data.ResearchData;
-            //target.InvestigationResponseDate = data.ResearchData != null && data.ResearchData.Any()
-            //    ? Date.ConvertToUtcFormattedDate(
-            //        data.ResearchData
-            //            .Where(r => r.OriginModule == data.BusinessInvoiceStatus)
-            //            .Max(r => r.ResponseDate)
-            //            ?.ToString())
-            //    : Date.Create(null);
+            // FIX: mapear a la lista List<AlertSolidaria> AlertSolidaria (no AlertsEncountered[])
+            target.AlertSolidaria = data.AlertsNode != null
+                ? data.AlertsNode.Select(a => new RulesEngine.Domain.Common.AlertSolidaria
+                {
+                    NameAction = a.NameAction,
+                    Type = a.Type,
+                    Module = a.Module,
+                    Message = a.Message,
+                    Description = a.Description,
+                    Typification = string.Empty,
+                    HasPriority = false
+                }).ToList()
+                : new List<RulesEngine.Domain.Common.AlertSolidaria>();
 
-            // Totales de glosas – en Solidaria están en Claim.TotalGlossValues (adaptar si se requiere)
+            // Totales de glosas
             var totalApproved = data.Sections.TotalGlossValues.TotalInvoiceApprovedValue ?? 0;
-            var totalGlossed = data.Sections.TotalGlossValues.TotalInvoiceObjectedValue ?? 0; 
+            var totalGlossed = data.Sections.TotalGlossValues.TotalInvoiceObjectedValue ?? 0;
             target.TotalAuthorizedValue = Currency.Create(totalApproved.ToString());
             target.TotalGlossedValue = Currency.Create(totalGlossed.ToString());
-
-            //target.ProcessAndContracts = data.LegalProcessesAndTransactionContractsParameters?
-            //    .Where(x => x.InvoiceNumber == data.InvoiceNumber && x.ClaimantId == data.Provider?.IdNumber)
-            //    .ToList();
-
-            //target.SinisterAggretation = data.ValidationSinister;
-            //target.PreviousObjections = data.PreviousObjections;
-            //target.MultipleTransposrts = data.MultipleTransports;
-            //target.ResearchRequest = data.ResearchRequest;
-            //target.ListServiceCodes = victim?.Services?
-            //    .Where(s => s.ServiceInfo != null)
-            //    .Select(s => s.ServiceInfo!.Code)
-            //    .Distinct()
-            //    .ToList() ?? new List<string>();
 
             target.NotNullErrorsInModel = data.NotNullErrorsInModel ?? new List<string>();
             target.TypeErrorsInModel = data.TypeErrorsInModel ?? new List<string>();
             target.ValidationAggregationRules_31_40 = data.ResultAggregationRules;
 
-            //target.InvoicePhoneVerificationValue = Currency.Create(data.InvoicePhoneVerificationValue ?? "0");
-            //target.UserClaim = data.ClaimsQueue?.UserAccount;
             target.HelpType = data.ProtectionType ?? string.Empty;
             target.HelpTypeToValidate = data.ParametrizedHelpType;
             target.PrimaryTransportationDate = Date.Create(null);

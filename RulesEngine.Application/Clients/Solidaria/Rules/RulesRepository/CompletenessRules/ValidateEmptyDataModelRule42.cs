@@ -16,22 +16,26 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Comple
                 .Match(() => invoiceToCheck!, x => x.TypeErrorsInModel != null && x.TypeErrorsInModel.Count() > 0);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)))
                 .Do(ctx => OnMatch());
         }
 
-        private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        private AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
-            Alert alert = new Alert
+            var msg = invoiceToCheck.TypeErrorsInModel!.Count > 1
+                ? $"Los campos {string.Join(", ", invoiceToCheck.TypeErrorsInModel!)} no se encuentran dentro de los valores permitidos en el anexo técnico FURIPS1"
+                : $"El campo {invoiceToCheck.TypeErrorsInModel[0]} no se encuentra dentro de los valores permitidos en el anexo técnico FURIPS1";
+
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de completitud",
-                AlertDescription = "valida existencia de  de campos vacios para FURIPS 1",
-                AlertMessage = invoiceToCheck.TypeErrorsInModel!.Count > 1 ? $" Los campos {string.Join(", ", invoiceToCheck.TypeErrorsInModel!)} no se encuentra dentro de los valores permitidos en el anexo tenico FURIPS1"
-                : $"El campo {invoiceToCheck.TypeErrorsInModel[0]} no se encuentra dentro de los valores permitidos en el anexo tenico FURIPS1"
+                NameAction = "Alerta",
+                Type = "Regla de completitud",
+                Module = "Reclamaciones",
+                Description = "Valida existencia de campos vacíos para FURIPS 1",
+                Message = msg,
+                Typification = string.Empty,
+                HasPriority = false
             };
-            return alert;
         }
     }
 }

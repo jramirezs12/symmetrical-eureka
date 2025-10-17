@@ -19,26 +19,24 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                 ));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)));
         }
 
-        private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        private AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
             string typification = invoiceToCheck.TypificationMap.GetValueOrDefault(GetType().Name, "Sin typification");
             bool haspriority = invoiceToCheck.HasPriorityMap.GetValueOrDefault(GetType().Name, false);
 
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToInvestigation",
-                AlertNameAction = "Enviar a investigar",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El número de documento de identidad de la víctima en la tabla de origen es igual a el número de documento de identidad de la víctima en la tabla de consulta y no tiene resultado de investigación asociado al siniestro",
-                AlertMessage = "Se debe enviar a investigar por alerta de atipicidad",
+                NameAction = "Enviar a investigar",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El documento de la víctima coincide y no hay investigación asociada al siniestro",
+                Message = "Se debe enviar a investigar por alerta de atipicidad",
                 Typification = typification,
                 HasPriority = haspriority
             };
-
-            return alert;
         }
     }
 }

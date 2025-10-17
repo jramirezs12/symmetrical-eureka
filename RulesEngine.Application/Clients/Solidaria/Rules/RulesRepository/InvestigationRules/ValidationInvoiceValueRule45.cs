@@ -14,22 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                 && x.IpsPhoneVerification.Any(c => x.IpsNit == c.NitIps
                                 && x.InvoiceValue.Value > x.InvoicePhoneVerificationValue.Value));
             Then()
-                .Do(ctx => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(ctx => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de investigación",
-                AlertDescription = "EL nit que se está validando es igual al nit de la tabla de consulta y el valor de la factura es mayor al valor permitido",
-                AlertMessage = "Verificación telefonica"
+                NameAction = "Alerta",
+                Type = "Regla de investigación",
+                Module = "Reclamaciones",
+                Description = "El NIT coincide y el valor de la factura es mayor al valor permitido",
+                Message = "Verificación telefónica",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

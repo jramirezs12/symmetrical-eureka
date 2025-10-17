@@ -17,25 +17,23 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                     && Date.IsNullable(x.InvestigationResponseDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert(invoiceToCheck)));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert(invoiceToCheck)));
         }
 
-        private Alert CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
+        private AlertSolidaria CreateAlert(InvoiceToCheckSolidaria invoiceToCheck)
         {
             string typification = invoiceToCheck.TypificationMap.GetValueOrDefault(GetType().Name, "Sin typification");
             bool haspriority = invoiceToCheck.HasPriorityMap.GetValueOrDefault(GetType().Name, false);
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToInvestigation",
-                AlertNameAction = "Enviar a Investigar",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "El NIT de la IPS en la tabla de origen es igua al NIT de la IPS en la tabla de consulta  y el siniestro no tiene resultado de investigación",
-                AlertMessage = "Se debe enviar a investigar, IPS se encuentra en la matriz de IPS en esquema de investigación y no tiene investigación asociada",
+                NameAction = "Enviar a Investigar",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "El NIT de la IPS en la tabla de origen es igua al NIT de la IPS en la tabla de consulta  y el siniestro no tiene resultado de investigación",
+                Message = "Se debe enviar a investigar, IPS se encuentra en la matriz de IPS en esquema de investigación y no tiene investigación asociada",
                 Typification = typification,
                 HasPriority = haspriority,
             };
-
-            return alert;
         }
     }
 }

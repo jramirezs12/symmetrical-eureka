@@ -19,21 +19,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Invest
                                                                         > x.SamePlateDifferentEventNumber);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Reglas de investigación",
-                AlertDescription = "La placa en la tabla de origen es igual a la placa en la tabla de consulta, debe construir la llave \"Evento\" en la tabla de origen y contar la cantidad de eventos diferentes en la tabla consulta que estén por placa, si la cantidad de eventos es mayor a x",
-                AlertMessage = "Evento múltiple"
+                NameAction = "Alerta",
+                Type = "Reglas de investigación",
+                Module = "Reclamaciones",
+                Description = "La placa en la tabla de origen es igual a la placa en la tabla de consulta, debe construir la llave \"Evento\" en la tabla de origen y contar la cantidad de eventos diferentes en la tabla consulta que estén por placa, si la cantidad de eventos es mayor a x",
+                Message = "Evento múltiple",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

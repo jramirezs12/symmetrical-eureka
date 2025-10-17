@@ -1,6 +1,5 @@
 using NRules.Fluent.Dsl;
 using RulesEngine.Domain.Common;
-using RulesEngine.Domain.RulesEntities.Mundial.Entities;
 using RulesEngine.Domain.RulesEntities.Solidaria.Entities;
 
 namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.User
@@ -18,21 +17,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.User
             When()
                 .Match(() => invoiceToCheck, x => x.AllowedUsers != null && x!.AllowedUsers!.Any(c => c.UserAccount == x.UserClaim));
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por Usuario",
-                AlertDescription = "Valida si el usuario se encuentra en el archivo matriz",
-                AlertMessage = "Asignación a calidad por Usuario"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por Usuario",
+                Module = "Reclamaciones",
+                Description = "Valida si el usuario se encuentra en el archivo matriz",
+                Message = "Asignación a calidad por Usuario",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

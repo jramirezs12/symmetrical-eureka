@@ -19,22 +19,22 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.DateRu
                              Date.IsNotNullable(x.DeathDate, x.EventDate) && Date.GreaterThan(x.EventDate, x.DeathDate));
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "DenyClaim",
-                AlertNameAction = "Devolver Reclamación",
-                AlertType = "Regla lógica de fechas",
-                AlertDescription = "Se valida si la fecha de ocurrencia el evento es posterior a la feha de fallecimiento, si lo es se rechazará la reclamación",
-                AlertMessage = "Aplicar la objeción total teniendo en cuenta que la victima se encuentra fallecido en RNEC para la fecha del evento."
+                NameAction = "Devolver Reclamación",
+                Type = "Regla lógica de fechas",
+                Module = "Reclamaciones",
+                Description = "Se valida si la fecha de ocurrencia el evento es posterior a la feha de fallecimiento, si lo es se rechazará la reclamación",
+                Message = "Aplicar la objeción total teniendo en cuenta que la victima se encuentra fallecido en RNEC para la fecha del evento.",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

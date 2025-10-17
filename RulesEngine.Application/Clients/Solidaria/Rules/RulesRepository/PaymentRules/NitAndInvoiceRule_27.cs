@@ -14,21 +14,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Paymen
                 .Match(() => invoiceToCheck!, x => x.IpsNit != x.IpsNitF2 || x.InvoiceNumberF1 != x.InvoiceNumberF2);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "Alert",
-                AlertNameAction = "Alerta",
-                AlertType = "Regla de coincidencia",
-                AlertDescription = "El nIT más número de factura registrado de la tabla origen se encuentra en la tabla consulta bajo otro número de radicado",
-                AlertMessage = "La reclamación ya se encuentra en otro radicado"
+                NameAction = "Alerta",
+                Type = "Regla de coincidencia",
+                Module = "Reclamaciones",
+                Description = "El NIT y/o número de factura en la tabla de origen difiere del de la consulta",
+                Message = "La reclamación ya se encuentra en otro radicado",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

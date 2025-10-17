@@ -15,21 +15,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.FERule
                                             x.IpsNit != x.IpsNitFE && x.InvoiceNumberF1 != x.InvoiceNumberFE);
 
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()));
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()));
         }
 
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "DenyClaim",
-                AlertNameAction = "Devolver Reclamación",
-                AlertType = "Regla Facturación Electronica",
-                AlertDescription = "El NIT más número de factura de la tabla origen no coincide con el registrado en la tabla de consulta",
-                AlertMessage = "Aplicar devolución, la reclamación debe contar con reporte de Facturación Electronica"
+                NameAction = "Devolver Reclamación",
+                Type = "Regla Facturación Electronica",
+                Module = "Reclamaciones",
+                Description = "El NIT más número de factura de la tabla origen no coincide con el registrado en la tabla de consulta",
+                Message = "Aplicar devolución, la reclamación debe contar con reporte de Facturación Electronica",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }

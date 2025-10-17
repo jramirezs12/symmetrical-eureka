@@ -16,21 +16,21 @@ namespace RulesEngine.Application.Clients.Solidaria.Rules.RulesRepository.Claima
             When()
                 .Match(() => invoiceToCheck, x => x.IpsNitList!.Any(c=>c.NitIps == x.IpsNit));
             Then()
-                .Do(w => invoiceToCheck!.Alerts.Add(CreateAlert()))
+                .Do(w => invoiceToCheck!.AlertSolidaria.Add(CreateAlert()))
                 .Do(ctx => OnMatch());
         }
-        private static Alert CreateAlert()
+        private static AlertSolidaria CreateAlert()
         {
-            var alert = new Alert
+            return new AlertSolidaria
             {
-                AlertAction = "SendToQuality",
-                AlertNameAction = "Enviar a Calidad",
-                AlertType = "Regla por Id Reclamante",
-                AlertDescription = "Valida si el nit de la reclamación se encuentra en el archivo matriz",
-                AlertMessage = "Asignación a calidad por NIT"
+                NameAction = "Enviar a Calidad",
+                Type = "Regla por Id Reclamante",
+                Module = "Reclamaciones",
+                Description = "Valida si el NIT de la reclamación se encuentra en el archivo matriz",
+                Message = "Asignación a calidad por NIT",
+                Typification = string.Empty,
+                HasPriority = false
             };
-
-            return alert;
         }
     }
 }
